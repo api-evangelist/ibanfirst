@@ -1,0 +1,149 @@
+generated: '2026-08-17'
+method: searched
+status: published
+source: https://docs.ibanfirst.com/guides/mcp-connector
+note: >-
+  iBanFirst publishes a first-party hosted remote MCP server. The connector shipped with API
+  version 1.7.0 on 2026-06-05 (see changelog/ibanfirst-changelog.yml) and is documented as a
+  Claude.ai / Claude Desktop custom connector. The endpoint is reachable anonymously and
+  answers RFC 8414 and RFC 9728 metadata, but tools/list is OAuth-gated: an unauthenticated
+  JSON-RPC tools/list returns HTTP 401 {"error":"invalid_token"}. The tool list below is
+  therefore taken verbatim from the provider's own connector guide (names + descriptions),
+  not from a live tools/list response — per-tool inputSchema requires authenticated
+  introspection with an iBanFirst OAuth client.
+
+deployment:
+  mode: remote
+  endpoint: https://mcp.ibanfirst.com/mcp
+  auth: oauth
+  verified: probed
+
+server:
+  name: iBanFirst MCP
+  transport: http
+  url: https://mcp.ibanfirst.com/mcp
+  docs: https://docs.ibanfirst.com/guides/mcp-connector
+  clients_documented:
+    - Claude.ai (Customize -> Connectors -> Custom Url)
+    - Claude Desktop (Customize -> Connectors, search "iBanFirst App MCP")
+  credentials: >-
+    "OAuth Client ID" and "OAuth Client Password" issued by iBanFirst and entered during
+    connector setup in the Claude interface.
+
+oauth:
+  spec: RFC 8414 (authorization server metadata) + RFC 9728 (protected resource metadata)
+  issuer: https://mcp.ibanfirst.com/
+  authorization_endpoint: https://mcp.ibanfirst.com/authorize
+  token_endpoint: https://mcp.ibanfirst.com/token
+  registration_endpoint: https://mcp.ibanfirst.com/register
+  dynamic_client_registration: true
+  response_types_supported: [code]
+  grant_types_supported: [authorization_code, refresh_token]
+  token_endpoint_auth_methods_supported: [client_secret_post]
+  code_challenge_methods_supported: [S256]
+  resource: https://mcp.ibanfirst.com/
+  bearer_methods_supported: [header]
+  scopes_advertised: none
+  files:
+    - well-known/ibanfirst-mcp-oauth-authorization-server.json
+    - well-known/ibanfirst-mcp-oauth-protected-resource.json
+
+introspection:
+  tools_list_probed: true
+  tools_list_status: 401
+  tools_list_body: '{"error": "invalid_token", "error_description": "Authentication required"}'
+  input_schemas_available: false
+  input_schemas_note: >-
+    Tool input schemas are not published anywhere public. Where a tool maps to a REST
+    operation, the real input contract is that operation's parameters in
+    openapi/ibanfirst-clientapi-openapi.yml — see mcp/ibanfirst-tool-crosswalk.yml.
+
+tool_source: https://docs.ibanfirst.com/guides/mcp-connector
+tool_count: 16
+tools:
+  - name: get_wallets
+    category: Wallets
+    description: List all iBanFirst wallets. Optionally filter by 3-letter currency code.
+  - name: get_wallet_details
+    category: Wallets
+    description: Retrieve full wallet details including IBAN and bank information by ID.
+  - name: get_wallet_balance
+    category: Wallets
+    description: Obtain wallet balance for a specified date (YYYY-MM-DD format).
+  - name: get_financial_movements
+    category: Financial movements
+    description: List transaction history from the last 12 months only, with filtering options.
+  - name: get_financial_movement_details
+    category: Financial movements
+    description: Access complete details of a specific transaction by ID.
+  - name: get_payments_by_status
+    category: Payments
+    description: Filter payments by status (all, planified, finalized, rejected, etc.).
+  - name: get_payment_details
+    category: Payments
+    description: Retrieve comprehensive payment information by ID.
+  - name: get_payment_options
+    category: Payments
+    description: Get available payment options and fee estimates for a given wallet.
+  - name: get_fx_rates
+    category: FX rates & trades
+    description: Obtain live indicative FX rates for currency pairs.
+  - name: get_trades
+    category: FX rates & trades
+    description: List spot FX trades (settle instantly), with status/date filtering.
+  - name: get_trade_details
+    category: FX rates & trades
+    description: Access specific trade details by ID.
+  - name: get_fix_forwards
+    category: Fix-forward trades
+    description: List booked and executed fix-forward contracts, with pagination.
+  - name: get_fix_forward
+    category: Fix-forward trades
+    description: Get fix-forward trade details by ID.
+  - name: get_external_bank_accounts
+    category: Beneficiaries
+    description: >-
+      Retrieve the list of all beneficiaries referenced with your iBanFirst accounts.
+  - name: get_external_bank_account_by_id
+    category: Beneficiaries
+    description: Obtain beneficiary details by account ID.
+  - name: disconnect_ibanfirst_mcp
+    category: Session
+    description: Disconnect the current account from the MCP connector.
+
+surface_shape:
+  read_only: true
+  note: >-
+    Every documented tool is a read. The connector exposes no payment creation, payment
+    confirmation, trade booking, beneficiary creation or webhook management tool, even
+    though the REST API exposes all of them. The MCP surface is deliberately a treasury
+    read surface; money movement stays on REST. See rest_only[] in the tool crosswalk.
+
+related:
+  agent_skill_published_by_provider:
+    name: ibanfirst-excel-sync
+    docs: https://docs.ibanfirst.com/guides/excel
+    distribution: >-
+      Pasted into Claude Project Knowledge as text; no downloadable skill file is published.
+    tools_used:
+      - get_wallets
+      - get_wallet_details
+      - get_wallet_balance
+      - get_financial_movements
+      - get_payments_by_status
+      - get_payment_details
+      - get_fx_rates
+      - get_external_bank_accounts
+
+x-evidence:
+  fetched: '2026-08-17'
+  probes:
+    - url: https://mcp.ibanfirst.com/mcp
+      method: POST tools/list
+      http_status: 401
+    - url: https://mcp.ibanfirst.com/.well-known/oauth-authorization-server
+      http_status: 200
+    - url: https://mcp.ibanfirst.com/.well-known/oauth-protected-resource
+      http_status: 200
+    - url: https://docs.ibanfirst.com/guides/mcp-connector
+      http_status: 200

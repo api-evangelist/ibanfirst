@@ -1,0 +1,120 @@
+generated: '2026-08-17'
+method: derived
+source: openapi/ibanfirst-clientapi-openapi.yml
+format: proprietary
+rfc9457: false
+note: >-
+  Derived from the OpenAPI response definitions. iBanFirst does NOT use RFC 9457
+  application/problem+json; it returns a proprietary JSON error object. Crucially, the spec does
+  not enumerate individual 4xx/5xx status codes on ANY operation - every one of the 38 operations
+  declares a single `default` response bound to the Error (or ErrorVOP) schema alongside its 200
+  or 204. That means the machine-readable contract tells a client the SHAPE of an error but not
+  WHICH errors an operation can produce, and there is no public error-code registry: the numeric
+  errorCode values and their meanings are not published anywhere a non-customer can read. The
+  `link` field in the envelope points at a page describing the error, but those pages are not
+  enumerated in the docs. This is a real gap and it is recorded rather than filled in.
+
+envelope:
+  media_type: application/json
+  schema: Error
+  properties:
+    errorCode:
+      type: number
+      format: int
+      description: The code referring the error.
+    errorType:
+      type: string
+      description: A short description identifying a general category for the error that occurred.
+    errorMessage:
+      type: string
+      description: Error description.
+    link:
+      type: string
+      description: A hyperlink to access the page that describes more accurately the error.
+
+variants:
+  - schema: ErrorVOP
+    description: >-
+      Error envelope extended with a payeeVerification block, returned when verification of payee
+      (VoP) does not fully match the submitted beneficiary. Introduced with payee verification in
+      API 1.3.0.
+    adds:
+      payeeVerification:
+        status:
+          enum: [PARTIAL, FAILED]
+        message: Verification of payee result details.
+        corrections:
+          account_holder_name: Expected beneficiary name.
+          account_holder_type:
+            enum: [Individual, Corporate]
+    used_by:
+      - 'POST /externalBankAccounts'
+      - 'POST /payments'
+    handling: >-
+      Treat PARTIAL as an actionable correction rather than a terminal failure: resubmit with
+      corrections.account_holder_name / account_holder_type. Treat FAILED as a stop.
+
+declared_responses:
+  operations_total: 38
+  with_200: 37
+  with_204: 10
+  with_enumerated_4xx: 0
+  with_enumerated_5xx: 0
+  with_default: 38
+  default_schema: Error (ErrorVOP on the two payee-verification operations)
+
+problems:
+  - status: default
+    schema: Error
+    title: Unspecified API error
+    description: >-
+      Every operation binds all non-2xx outcomes to a single `default` response carrying the Error
+      object. The concrete HTTP status and errorCode are not declared in the contract.
+    applies_to: all 38 operations
+    source_operation: openapi/ibanfirst-clientapi-openapi.yml
+  - status: default
+    schema: ErrorVOP
+    title: Verification of payee mismatch
+    description: >-
+      Beneficiary or payment creation rejected or flagged by verification of payee, with a
+      suggested correction in payeeVerification.corrections.
+    applies_to:
+      - 'POST /externalBankAccounts'
+      - 'POST /payments'
+    source_operation: openapi/ibanfirst-clientapi-openapi.yml
+  - status: 204
+    schema: null
+    title: Empty collection
+    description: >-
+      Not an error, but frequently mishandled as one: since API 1.2.0 a request for a list with no
+      matching objects returns 204 No Content with an empty body rather than 200 with [].
+    applies_to: the ten list operations that declare 204
+    source_operation: openapi/ibanfirst-clientapi-openapi.yml
+
+transport_level_observations:
+  - status: 401
+    observed_at: 'https://api.ibanfirst.com/api/... without an X-WSSE header'
+    body: application/json, 152 bytes
+    note: Probed live on 2026-08-17; the edge returns a JSON 401 for /api/* without credentials.
+  - status: 503
+    observed_at: 'https://api.ibanfirst.com/<any path outside /api/*>'
+    body: text/html
+    note: >-
+      The API edge returns an HTML 503 rather than a 404 for unrouted paths, so a client that
+      mistypes a base path receives a misleading "service unavailable" instead of "not found".
+
+webhook_delivery_errors:
+  detail: asyncapi/ibanfirst-webhooks.yml
+  schema: webhookFailedNotification
+  fields: [id, notificationContent, errorMessage, httpStatusCode, failedAt, retryCount]
+  retrieval: 'GET /webhooks/{webhookId}/failed-notifications'
+  note: >-
+    iBanFirst records the receiver's failure, not its own: httpStatusCode is the status the
+    customer's endpoint returned. Failures are retried twice with a 60-second delay (three
+    attempts total) for HTTP 400 and 500 responses.
+
+gaps:
+  - No error-code registry is published; errorCode values are undocumented publicly.
+  - No 4xx/5xx status codes are enumerated per operation in the OpenAPI.
+  - Error responses carry no examples in the spec.
+  - Not RFC 9457; no `type` URI, no `instance`, no `title`/`detail` split.

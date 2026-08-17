@@ -1,0 +1,121 @@
+generated: '2026-08-17'
+method: searched
+source: openapi/ibanfirst-clientapi-openapi.yml
+docs: https://docs.ibanfirst.com/api/clientapi/section/authentication-x-wsse
+note: >-
+  Derived mechanically from the OpenAPI securitySchemes (one apiKey scheme, X-WSSE in header)
+  and then upgraded from the provider's own documentation, which publishes the full digest
+  algorithm and code samples. Two further authentication models exist on iBanFirst surfaces the
+  OpenAPI does not describe: OAuth 2.0 on the hosted MCP server (metadata probed live) and
+  eIDAS QWAC mutual TLS on the PSD2 XS2A API.
+
+summary:
+  types:
+    - apiKey
+    - oauth2
+    - mutualTLS
+  api_key_in:
+    - header
+  oauth2_flows:
+    - authorizationCode
+  surfaces: 3
+
+schemes:
+  - name: X-WSSE
+    type: apiKey
+    in: header
+    parameter: X-WSSE
+    surface: iBanFirst REST API
+    sources:
+      - openapi/ibanfirst-clientapi-openapi.yml
+    docs: https://docs.ibanfirst.com/api/clientapi/section/authentication-x-wsse
+    scheme_family: WS-Security UsernameToken (WSSE)
+    header_format: >-
+      X-WSSE: UsernameToken Username="<username>", PasswordDigest="<digest>",
+      Nonce="<nonce_b64>", Created="<timestamp>"
+    fields:
+      - name: Username
+        description: The username assigned during onboarding.
+      - name: Nonce
+        description: A Base64-encoded random hex string (>= 32 hex characters).
+      - name: Created
+        description: 'Current UTC timestamp in ISO 8601: YYYY-MM-DDTHH:MM:SSZ.'
+      - name: PasswordDigest
+        description: >-
+          Base64( SHA-1( nonce_bytes + created_bytes + secret_bytes ) ) - SHA-1 binary digest,
+          then Base64.
+    token_lifetime: >-
+      Stateless; expires after approximately 5 minutes, so the header must be recomputed for
+      every request.
+    applied_globally: true
+    credential_issuance: >-
+      Not self-serve. Per the quickstart, "our Support team will generate API tokens linked to
+      your account"; tokens can be granted per method.
+    code_samples_published: [python, javascript, php, java, go]
+    observations:
+      - >-
+        The digest uses SHA-1. That is the WSSE UsernameToken profile as originally specified,
+        not a modern HMAC construction, and it is worth noting for a payments API - although the
+        secret never crosses the wire and the token is short-lived.
+      - >-
+        There is no bearer/OAuth option on the REST API and no scope model, so authorization is
+        expressed by which methods a support-issued token is granted rather than by scopes.
+
+  - name: MCP OAuth 2.0
+    type: oauth2
+    surface: iBanFirst MCP Connector (https://mcp.ibanfirst.com/mcp)
+    sources:
+      - well-known/ibanfirst-mcp-oauth-authorization-server.json
+      - well-known/ibanfirst-mcp-oauth-protected-resource.json
+    docs: https://docs.ibanfirst.com/guides/mcp-connector
+    method: probed
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://mcp.ibanfirst.com/authorize
+        tokenUrl: https://mcp.ibanfirst.com/token
+        pkce: S256
+        scopes: {}
+    issuer: https://mcp.ibanfirst.com/
+    registration_endpoint: https://mcp.ibanfirst.com/register
+    dynamic_client_registration: true
+    grant_types_supported: [authorization_code, refresh_token]
+    token_endpoint_auth_methods_supported: [client_secret_post]
+    bearer_methods_supported: [header]
+    scopes_advertised: none
+    credential_issuance: >-
+      iBanFirst issues an "OAuth Client ID" and "OAuth Client Password" that the user enters when
+      adding the connector in Claude.
+    observations:
+      - >-
+        The authorization-server metadata advertises no scopes_supported, so the MCP surface has
+        no published scope vocabulary. Authorization is all-or-nothing per connected account.
+
+  - name: eIDAS QWAC mutual TLS
+    type: mutualTLS
+    surface: iBanFirst PSD2 XS2A API (AIS/PIS)
+    docs: https://ibanfirst.com/psd2-api
+    method: searched
+    requirement: >-
+      "If you are a registered Third-Party Provider (TPP), with a qualified EIDAS QWAC and wish
+      to use iBanFirst API, please contact us at open-api@ibanfirst.com"
+    sandbox: https://open-api-sdbx.ibanfirst.com/Banking/API
+    probe_result: >-
+      An anonymous HTTPS request to the sandbox host fails at the TLS layer (curl exit 56,
+      SSL_read error) rather than returning an HTTP status - consistent with a listener that
+      requires a client certificate. No specification could be retrieved.
+    sca: >-
+      Strong customer authentication is in scope of the PSD2 API per the provider's description
+      (accounts information, payment initiation and secure customer authentication).
+
+x-evidence:
+  checked: '2026-08-17'
+  probes:
+    - url: https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml
+      http_status: 200
+    - url: https://docs.ibanfirst.com/api/clientapi/section/authentication-x-wsse
+      http_status: 200
+    - url: https://mcp.ibanfirst.com/.well-known/oauth-authorization-server
+      http_status: 200
+    - url: https://open-api-sdbx.ibanfirst.com/Banking/API
+      http_status: 0
+      note: TLS handshake terminated by the server; no HTTP response

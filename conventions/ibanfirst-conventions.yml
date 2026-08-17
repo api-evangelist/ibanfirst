@@ -1,0 +1,196 @@
+generated: '2026-08-17'
+method: searched
+source: openapi/ibanfirst-clientapi-openapi.yml
+docs: https://docs.ibanfirst.com/api/clientapi
+note: >-
+  Cross-cutting request/response semantics for the iBanFirst REST API, derived from the OpenAPI
+  and confirmed against the provider's own reference sections. Two conventions a payments API is
+  usually expected to publish are genuinely ABSENT here and are recorded as such rather than
+  guessed: there is no idempotency contract and no rate-limit signalling.
+
+api:
+  name: iBanFirst API
+  version: 1.6.0
+  spec: openapi/ibanfirst-clientapi-openapi.yml
+  base_urls:
+    live: https://api.ibanfirst.com/api
+    demo: https://api-demo.ibanfirst.com/api
+  style: REST, resource-oriented URLs, HTTP status codes signal errors
+  media_type: application/json
+
+authentication:
+  style: per-request signed header (X-WSSE UsernameToken)
+  header: X-WSSE
+  detail: authentication/ibanfirst-authentication.yml
+  applies_to: every operation (global security requirement in the spec)
+  transport: HTTPS only - "Plain HTTP calls will fail."
+
+idempotency:
+  supported: false
+  header: null
+  evidence: >-
+    No Idempotency-Key (or equivalent) parameter appears on any of the 38 operations in the
+    OpenAPI, and the string "idempoten" does not appear anywhere in the spec or in the published
+    reference sections.
+  consequence: >-
+    POST /payments, POST /trades and POST /fixed-forwards have no client-supplied deduplication
+    key, so a retry after a timeout can create a duplicate money movement. The only safeguards
+    the contract offers are the two-step create-then-confirm flow on payments
+    (POST /payments then PUT /payments/{id}/confirm) and the quote reference returned by
+    POST /quotes, which binds a trade to one priced quote.
+  mitigation_available:
+    - >-
+      Payments are created unconfirmed; a duplicate create can be found with
+      GET /payments/{status} and removed with DELETE /payments/{id} before confirmation.
+    - >-
+      GET /logs and GET /logs/{nonce} expose the API call log keyed by the X-WSSE nonce, which
+      lets a client establish after the fact whether a request was received.
+
+pagination:
+  style: page-number
+  parameters:
+    - name: page
+      in: query
+      description: Page number.
+    - name: per_page
+      in: query
+      description: Page size.
+    - name: sort
+      in: query
+      description: Sort order.
+  applies_to:
+    - 'GET /financialMovements'
+    - 'GET /externalBankAccounts'
+    - 'GET /payments/{status}'
+    - 'GET /trades/_{status}'
+    - 'GET /fixed-forwards'
+    - 'GET /documents'
+    - 'GET /logs'
+    - 'GET /webhooks/{webhookId}/failed-notifications'
+  response_envelope: >-
+    Bare JSON arrays. The spec declares no wrapper object, no total count and no next/prev links,
+    so a client cannot tell from a response whether more pages exist - it must page until an
+    empty result or a 204.
+  empty_result: >-
+    HTTP 204 No Content is returned for an empty object list (introduced in API 1.2.0), so
+    clients must treat 204 as "zero rows", not as an error.
+
+filtering:
+  date_range:
+    - fromDate
+    - toDate
+  status:
+    style: path segment on most collections (e.g. /payments/{status}, /trades/_{status}) and a
+      query parameter on others
+  scoping:
+    - walletId
+
+field_expansion:
+  supported: false
+  note: No expand / include / fields parameter appears in the contract.
+
+metadata:
+  supported: false
+  note: >-
+    No free-form metadata object on any resource. Client-side correlation must use the provider's
+    own reference fields on Payment and Trade.
+
+request_tracing:
+  request_id_header: null
+  mechanism: >-
+    The X-WSSE Nonce doubles as the request identifier: GET /logs/{nonce} retrieves the log entry
+    for a specific call, and GET /logs lists them. This is unusual - the deduplication/tracing
+    identity is the auth nonce rather than a separate request id - and it means a client should
+    persist the nonce it generated for every write.
+  operations:
+    - 'GET /logs'
+    - 'GET /logs/{nonce}'
+
+versioning:
+  scheme: semantic versioning of the API document (currently 1.6.0); no version segment in the
+    URL path, no version header, no date-based version pinning
+  current: 1.6.0
+  spec_version_seen: 1.6.0
+  changelog_latest: 1.7.0
+  note: >-
+    The published changelog lists 1.7.0 (2026-06-05, the MCP connector) while the OpenAPI served
+    at docs.ibanfirst.com still declares info.version 1.6.0. Because there is no version selector
+    in the URL or a header, all clients are always on the current version and a breaking change
+    would land without an opt-in.
+  detail: lifecycle/ibanfirst-lifecycle.yml
+
+error_envelope:
+  shape: proprietary JSON object (not RFC 9457 problem+json)
+  media_type: application/json
+  schema: Error / ErrorVOP
+  fields:
+    - name: errorCode
+      type: number
+      description: The code referring the error.
+    - name: errorType
+      type: string
+      description: A short description identifying a general category for the error that occurred.
+    - name: errorMessage
+      type: string
+      description: Error description.
+    - name: link
+      type: string
+      description: A hyperlink to the page that describes the error more accurately.
+  variant:
+    name: ErrorVOP
+    adds: >-
+      payeeVerification { status: PARTIAL|FAILED, message, corrections { account_holder_name,
+      account_holder_type } }
+    used_by:
+      - 'POST /externalBankAccounts'
+      - 'POST /payments'
+    note: >-
+      Verification-of-payee failures are returned inside the ERROR envelope with a proposed
+      correction, so an agent handling a 4xx must inspect payeeVerification.corrections rather
+      than treating the response as a flat failure.
+  detail: errors/ibanfirst-problem-types.yml
+
+success_envelope:
+  shape: >-
+    Bare resource object or array; operations that only confirm success return
+    ProcessResult { result: boolean }.
+  status_codes_declared: [200, 204]
+  note: >-
+    The spec declares 200, 204 and a catch-all `default` response per operation. No 4xx or 5xx
+    status codes are enumerated individually.
+
+rate_limiting:
+  documented: false
+  headers: []
+  status_on_exhaustion: null
+  evidence: >-
+    No RateLimit-*, X-RateLimit-*, Retry-After or 429 reference appears in the spec or in the
+    published reference sections.
+  detail: rate-limits/ibanfirst-rate-limits.yml
+
+input_constraints:
+  forbidden_characters:
+    characters: ['&', '<', '>', '%', '?', '\', '/', '|']
+    applies_to: route parameters, query parameters and JSON bodies
+    source: https://docs.ibanfirst.com/api/clientapi/section/forbidden-characters-in-input-fields
+    note: >-
+      A blanket character denylist rather than per-field validation. Payment references,
+      beneficiary names and addresses containing any of these characters must be transliterated
+      by the client before submission.
+
+webhooks:
+  supported: true
+  signature_header: x-ibanfirst-signature
+  timestamp_header: x-ibanfirst-timestamp
+  algorithm: HMAC-SHA256
+  signed_payload: '{x-ibanfirst-timestamp}.{raw body}'
+  detail: asyncapi/ibanfirst-webhooks.yml
+
+cross_links:
+  authentication: authentication/ibanfirst-authentication.yml
+  errors: errors/ibanfirst-problem-types.yml
+  lifecycle: lifecycle/ibanfirst-lifecycle.yml
+  rate_limits: rate-limits/ibanfirst-rate-limits.yml
+  sandbox: sandbox/ibanfirst-sandbox.yml
+  webhooks: asyncapi/ibanfirst-webhooks.yml
+  data_model: data-model/ibanfirst-data-model.yml

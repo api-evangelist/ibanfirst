@@ -1,0 +1,110 @@
+generated: '2026-08-17'
+method: searched
+source: https://docs.ibanfirst.com/changelog
+note: >-
+  iBanFirst publishes a dated, semver-numbered changelog on its docs site and has migrated hosts
+  and replaced environments in public view. What it does NOT publish is a deprecation policy, a
+  sunset/deprecation header contract, an SLA, or a status page - each of those was probed and is
+  recorded as absent rather than assumed.
+
+versioning:
+  scheme: semver-of-the-document
+  current: 1.7.0
+  spec_declares: 1.6.0
+  in_url: false
+  in_header: false
+  version_selector: >-
+    None. The docs portal renders a version picker component but the API is published unversioned;
+    there is no /v1/ path segment, no Accept-version header and no date pinning. Every client is
+    on current.
+  docs: https://docs.ibanfirst.com/changelog
+  discrepancy: >-
+    The changelog is at 1.7.0 (2026-06-05) while the OpenAPI served at
+    https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml still declares info.version 1.6.0. The
+    1.7.0 release was the MCP connector plus documentation, which may explain why the REST
+    contract was not renumbered - but the two artifacts disagree.
+
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  evidence: >-
+    The strings "deprecat" and "sunset" appear nowhere in the OpenAPI or in the published
+    reference/guide pages (only as Redocly CSS variable names in the page shell). No operation or
+    schema in the spec carries deprecated: true.
+  observed_breaking_changes:
+    - version: 1.6.1
+      date: '2026-03-19'
+      change: >-
+        Demo environment host migrated from demo.ibanfirst.com to api-demo.ibanfirst.com. A host
+        change is breaking for any client with a hard-coded base URL, and it was communicated
+        through the changelog only.
+    - version: 1.5.0
+      date: '2026-01-15'
+      change: >-
+        The sandbox environment was replaced by a new demo environment - an environment
+        replacement announced in the changelog with no published migration or sunset window.
+    - version: 1.2.0
+      change: >-
+        Empty object lists began returning HTTP 204 instead of 200 with an empty array. This
+        changes response handling for every list consumer and is described in the changelog as an
+        addition rather than a breaking change.
+
+deprecated_operations: []
+deprecated_operations_note: No operation or schema in the OpenAPI is marked deprecated.
+
+sla:
+  url: null
+  uptime_target: null
+  published: false
+
+status_page:
+  url: null
+  published: false
+  evidence: >-
+    status.ibanfirst.com does not resolve (DNS NXDOMAIN); ibanfirst.com/status returns 404; the
+    generic ibanfirst.statuspage.io and ibanfirst.instatus.com hostnames both return 200 but serve
+    the Atlassian and Instatus marketing pages, not a customer status page - a soft-200 that was
+    rejected rather than recorded as a hit.
+  probes:
+    - url: https://status.ibanfirst.com/
+      status: 0
+      note: DNS did not resolve
+    - url: https://ibanfirst.com/status
+      status: 404
+    - url: https://ibanfirst.statuspage.io/
+      status: 200
+      note: 'Atlassian marketing page (<title>Real-Time Incident Communication with Statuspage</title>) - not iBanFirst'
+    - url: https://ibanfirst.instatus.com/
+      status: 200
+      note: 'Instatus marketing page (<title>Instatus - Get ready for downtime</title>) - not iBanFirst'
+
+support:
+  help_centre: https://support.ibanfirst.com/en/
+  api_credentials: >-
+    Issued by the iBanFirst support team, per method - there is no self-serve key console for the
+    REST API. The docs portal does render a developer-app UI (create app, API keys, roll/revoke
+    key) but it requires a portal login.
+  psd2_contact: mailto:open-api@ibanfirst.com
+
+surfaces:
+  rest:
+    live: https://api.ibanfirst.com/api
+    demo: https://api-demo.ibanfirst.com/api
+    launched: '2017'
+  mcp:
+    endpoint: https://mcp.ibanfirst.com/mcp
+    launched: '2026-06-05'
+    version_introduced: 1.7.0
+  psd2:
+    sandbox: https://open-api-sdbx.ibanfirst.com/Banking/API
+    access: eIDAS QWAC required
+
+changelog:
+  url: https://docs.ibanfirst.com/changelog
+  artifact: changelog/ibanfirst-changelog.yml
+  dated: true
+  oldest_entry: '2017'
+  newest_entry: '2026-06-05'

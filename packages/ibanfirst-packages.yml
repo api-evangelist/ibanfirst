@@ -1,0 +1,138 @@
+generated: '2026-08-17'
+method: searched
+source: >-
+  npm registry search, PyPI, RubyGems, Packagist, GitHub code search, gitlab.com/ibanfirst-it, and
+  the iBanFirst docs/SDK pages
+official_sdk_count: 0
+note: >-
+  iBanFirst ships NO first-party API client library in any language. This was searched, not
+  assumed: npm registry search for "ibanfirst" returns zero packages; PyPI has no `ibanfirst` or
+  `ibanfirst-api` project (404 on both); RubyGems search returns nothing; Packagist has exactly two
+  hits, one community client and one unrelated first-party Symfony bundle. What iBanFirst provides
+  instead of SDKs is inline code samples in five languages (Python, JavaScript, PHP, Java, Go) for
+  computing the X-WSSE digest, embedded in the OpenAPI info.description, plus a public Postman
+  collection. Because no official client library exists, this repo deliberately does NOT carry an
+  `SDKs` pointer in apis.yml - the artifact records a real zero.
+
+packages:
+  - language: php
+    registry: packagist
+    name: ibanfirst/elasticrequestbundle
+    url: https://packagist.org/packages/ibanfirst/elasticrequestbundle
+    source: https://gitlab.com/ibanfirst-it/public-vendors/elasticrequestbundle
+    install: composer require ibanfirst/elasticrequestbundle
+    official: true
+    api_client: false
+    version: null
+    published: '2019-03-21'
+    downloads_total: 0
+    note: >-
+      First-party by vendor namespace and by repository - it is published from the company's own
+      public GitLab group gitlab.com/ibanfirst-it, the only public project in that group - but it
+      is a Symfony bundle for querying Elasticsearch, NOT a client for the iBanFirst API. Only a
+      dev-master branch is tagged; there has never been a semver release, so `version` is null
+      rather than guessed. Last activity 2019-03-21, zero total downloads. Recorded here because
+      it is the company's only public package, and its state is itself the finding.
+
+  - language: php
+    registry: packagist
+    name: mradhi/ibanfirst-sdk
+    url: https://packagist.org/packages/mradhi/ibanfirst-sdk
+    source: https://github.com/mradhi/ibanfirst-sdk
+    install: composer require mradhi/ibanfirst-sdk
+    official: false
+    api_client: true
+    version: 1.0.5
+    published: '2020-08-30'
+    note: >-
+      Community "iBanFirst PHP Client Library". Latest release 1.0.5 on 2020-08-30 - six years
+      before the current API 1.6.0, so it predates payee verification, fixed forwards, webhook
+      subscriptions and the 204-on-empty-list change. Not maintained by iBanFirst.
+
+  - language: ruby
+    registry: null
+    name: ibanfirst-rails
+    url: https://github.com/ArnaudRemi/ibanfirst-rails
+    official: false
+    api_client: true
+    version: null
+    published: null
+    note: >-
+      Community "Gem used to connect and use the Ibanfirst API", published on GitHub only. Not on
+      RubyGems - https://rubygems.org/api/v1/gems/ibanfirst-rails.json returns 404 - so there is
+      no registry metadata to read a version or date from.
+
+registries_searched:
+  - registry: npm
+    query: https://registry.npmjs.org/-/v1/search?text=ibanfirst
+    status: 200
+    results: 0
+  - registry: pypi
+    query: https://pypi.org/pypi/ibanfirst/json
+    status: 404
+  - registry: pypi
+    query: https://pypi.org/pypi/ibanfirst-api/json
+    status: 404
+  - registry: rubygems
+    query: https://rubygems.org/api/v1/search.json?query=ibanfirst
+    status: 200
+    results: 0
+  - registry: packagist
+    query: https://packagist.org/search.json?q=ibanfirst
+    status: 200
+    results: 2
+  - registry: github
+    query: https://api.github.com/orgs/ibanfirst/repos
+    status: 200
+    results: 0
+    note: >-
+      The GitHub organisation github.com/iBanFirst exists (created 2017-02-16, blog
+      https://www.ibanfirst.com/, description "Foreign exchange payments for companies") but
+      publishes zero public repositories.
+  - registry: gitlab
+    query: https://gitlab.com/api/v4/groups/ibanfirst-it/projects?include_subgroups=true
+    status: 200
+    results: 1
+  - registry: maven-central
+    searched: true
+    results: 0
+  - registry: nuget
+    searched: true
+    results: 0
+  - registry: crates.io
+    searched: true
+    results: 0
+  - registry: pkg.go.dev
+    searched: true
+    results: 0
+
+what_the_provider_ships_instead:
+  - kind: code samples in the specification
+    languages: [python, javascript, php, java, go]
+    scope: X-WSSE digest computation only - not full API clients
+    source: openapi/ibanfirst-clientapi-openapi.yml (info.description) and
+      https://docs.ibanfirst.com/api/clientapi/section/code-samples
+  - kind: Postman collection
+    url: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+    status: 200
+    official: true
+    note: Public workspace "ibanfirst-rest-api-workspace" under the productibf account; linked
+      from the OpenAPI info.description.
+  - kind: Excel / Claude skill
+    name: ibanfirst-excel-sync
+    url: https://docs.ibanfirst.com/guides/excel
+    official: true
+    distribution: >-
+      Copy-paste text into Claude Project Knowledge - not a downloadable or versioned artifact.
+  - kind: file-transfer and ERP connectivity
+    detail: EBICS / SWIFTNet connection to accounting, cash management or ERP software (free per
+      the published Pricing Conditions)
+
+cli:
+  present: false
+  note: No first-party CLI was found in any registry or in the docs.
+
+gaps:
+  - No official SDK in any language.
+  - The only community API client with registry metadata was last released in 2020.
+  - The company's GitHub organisation has no public repositories.

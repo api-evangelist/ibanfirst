@@ -1,0 +1,149 @@
+generated: '2026-08-17'
+method: probed
+source: live HTTP probe of every iBanFirst host named in apis.yml and in the OpenAPI servers[] block
+note: >-
+  Seven hosts probed across five /.well-known/ paths plus the legacy /security.txt location.
+  Two real documents were found: an RFC 9116 security.txt served from the apex (www redirects
+  to the apex with a 301, and the file's own Canonical: line names the www URL), and the RFC
+  8414 / RFC 9728 OAuth metadata pair served by the hosted MCP server at mcp.ibanfirst.com.
+  No api-catalog, no ai-plugin.json, no OpenID Connect discovery, and no A2A agent card on any
+  host. The two API hosts (api / api-demo) answer 503 from the edge for every path outside
+  /api/*, so their /.well-known/ surface is not merely absent — it is not routed at all.
+hosts:
+  - host: https://ibanfirst.com
+    role: website apex
+    documents:
+      - path: /.well-known/security.txt
+        status: 200
+        content_type: text/plain; charset=utf-8
+        file: ibanfirst-security.txt
+        spec: RFC 9116
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+      - path: /security.txt
+        status: 404
+  - host: https://www.ibanfirst.com
+    role: website (redirects to apex)
+    documents:
+      - path: /.well-known/security.txt
+        status: 301
+        redirects_to: https://ibanfirst.com/.well-known/security.txt
+        final_status: 200
+        file: ibanfirst-security.txt
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+  - host: https://mcp.ibanfirst.com
+    role: hosted MCP server
+    documents:
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+        content_type: application/json
+        file: ibanfirst-mcp-oauth-authorization-server.json
+        spec: RFC 8414
+      - path: /.well-known/oauth-protected-resource
+        status: 200
+        content_type: application/json
+        file: ibanfirst-mcp-oauth-protected-resource.json
+        spec: RFC 9728
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+      - path: /.well-known/agent-card.json
+        status: 404
+      - path: /.well-known/agent.json
+        status: 404
+  - host: https://api.ibanfirst.com
+    role: production API host
+    note: >-
+      Edge answers 503 with an HTML error body for every path outside /api/*; /api/* answers
+      401 application/json without an X-WSSE header. No /.well-known/ surface is routed.
+    documents:
+      - path: /.well-known/security.txt
+        status: 503
+      - path: /.well-known/openid-configuration
+        status: 503
+      - path: /.well-known/oauth-authorization-server
+        status: 503
+      - path: /.well-known/api-catalog
+        status: 503
+      - path: /.well-known/ai-plugin.json
+        status: 503
+  - host: https://api-demo.ibanfirst.com
+    role: demo API host (OpenAPI servers[0])
+    documents:
+      - path: /.well-known/security.txt
+        status: 503
+      - path: /.well-known/openid-configuration
+        status: 503
+      - path: /.well-known/oauth-authorization-server
+        status: 503
+      - path: /.well-known/api-catalog
+        status: 503
+      - path: /.well-known/ai-plugin.json
+        status: 503
+  - host: https://docs.ibanfirst.com
+    role: developer documentation (Redocly portal)
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+      - path: /.well-known/agent-card.json
+        status: 404
+      - path: /.well-known/agent.json
+        status: 404
+  - host: https://platform.ibanfirst.com
+    role: customer platform / login
+    documents:
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/openid-configuration
+        status: 404
+      - path: /.well-known/oauth-authorization-server
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+summary:
+  hosts_probed: 7
+  documents_found: 3
+  security_txt: true
+  oauth_authorization_server: true
+  oauth_protected_resource: true
+  openid_configuration: false
+  api_catalog: false
+  ai_plugin: false
+  agent_card: false
+security_txt:
+  contact: mailto:security.txt@ibanfirst.com
+  expires: '2028-12-30T23:00:00.000Z'
+  encryption: https://www.ibanfirst.com/pgp-key.txt
+  acknowledgments: https://www.ibanfirst.com/hall-of-fame.html
+  preferred_languages: en, fr
+  canonical: https://www.ibanfirst.com/.well-known/security.txt
+  policy: https://www.ibanfirst.com/security-policy.html
+x-evidence:
+  checked: '2026-08-17'
+  method: curl -sS -L, status recorded per request

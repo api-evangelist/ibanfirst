@@ -1,0 +1,92 @@
+generated: '2026-08-17'
+method: searched
+source: https://docs.ibanfirst.com/changelog
+scheme: semver
+current_version: 1.7.0
+current_date: '2026-06-05'
+spec_version: 1.6.0
+format: Keep-a-Changelog style with bracketed version and ISO-ish date (YYYY/MM/DD)
+note: >-
+  Recent window captured verbatim from the provider's own dated changelog. The changelog is the
+  only channel iBanFirst uses to announce API change - there is no deprecation policy, no sunset
+  header and no email/RSS feed for API changes that could be found.
+entries:
+  - version: 1.7.0
+    date: '2026-06-05'
+    breaking: false
+    additions:
+      - >-
+        MCP Connector launch providing direct access to treasury and payment operations via the
+        Model Context Protocol.
+      - MCP + Excel integration with the ibanfirst-excel-sync Claude skill.
+    docs:
+      - Documentation for the MCP Connector and the Excel integration.
+    highlights: First agent-facing surface. See mcp/ibanfirst-mcp.yml.
+  - version: 1.6.1
+    date: '2026-03-19'
+    breaking: true
+    changes:
+      - >-
+        Demo environment host migration from demo.ibanfirst.com to api-demo.ibanfirst.com.
+    highlights: >-
+      Host change - breaking for clients with a hard-coded demo base URL, announced in the
+      changelog only.
+  - version: 1.6.0
+    date: '2026-03-19'
+    breaking: false
+    additions:
+      - New fixed forward trade services (quote and booking).
+      - >-
+        Webhook enhancements: new secret requests, subscription details retrieval, failed
+        notification logs, and trade events.
+      - Added speedOption field to payment services.
+    fixes:
+      - Bug fixes in trade details and in the rate object documentation.
+    highlights: >-
+      The version the currently published OpenAPI declares. Adds the fixed-forward hedging
+      surface and rounds out webhook operations.
+  - version: 1.5.0
+    date: '2026-01-15'
+    breaking: true
+    changes:
+      - Sandbox environment replaced with a new demo environment.
+    highlights: Test-environment replacement with no published migration window.
+  - version: 1.4.0
+    date: '2025-12-19'
+    breaking: false
+    additions:
+      - Webhook subscriptions for payment events.
+      - Contact email field added to beneficiary operations.
+    docs:
+      - Documentation update for the Get RIB parameter.
+  - version: 1.3.0
+    date: '2025-11-13'
+    breaking: false
+    additions:
+      - Payee verification (VoP) on beneficiary and payment creation.
+      - Payment tracker link support for SWIFT transactions.
+    highlights: >-
+      Introduces the ErrorVOP response variant - see errors/ibanfirst-problem-types.yml.
+  - version: 1.2.0
+    date: '2025'
+    breaking: true
+    changes:
+      - Status code 204 returned for empty object lists.
+    highlights: >-
+      Response-handling change for every list consumer; described as an addition in the
+      changelog.
+  - version: 1.1.0
+    date: '2025'
+    breaking: false
+    additions:
+      - Postman collection link added.
+  - version: 1.0.0
+    date: '2017'
+    breaking: false
+    additions:
+      - Initial API release with core features.
+entry_count: 9
+x-evidence:
+  fetched: '2026-08-17'
+  url: https://docs.ibanfirst.com/changelog
+  http_status: 200

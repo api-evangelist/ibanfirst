@@ -1,0 +1,129 @@
+generated: '2026-08-17'
+method: searched
+source: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+spec_type: Webhooks
+asyncapi_published: false
+asyncapi_note: >-
+  iBanFirst publishes NO AsyncAPI document. /asyncapi.yaml and /asyncapi.json were not served on
+  the docs host, the docs portal's only machine-readable spec is the REST OpenAPI
+  (_spec/api/ClientAPI.json|yaml), and the GitHub organisation github.com/iBanFirst has zero
+  public repositories. The event surface is real but it is only described in prose and in the REST
+  operations that manage subscriptions - it is captured here as a webhook catalog rather than
+  fabricated as an AsyncAPI.
+
+surface:
+  kind: outbound HTTP webhooks
+  managed_via: iBanFirst REST API (openapi/ibanfirst-clientapi-openapi.yml)
+  introduced: 1.4.0 (2025-12-19, payment events); trade events added in 1.6.0 (2026-03-19)
+  docs: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+  max_active_subscriptions: 10
+  ordering: not guaranteed - "Notifications may arrive out of order."
+
+management_operations:
+  - method: POST
+    path: /webhooks
+    summary: Create webhook subscription
+  - method: GET
+    path: /webhooks
+    summary: Get webhook subscriptions list
+  - method: GET
+    path: /webhooks/{webhookId}
+    summary: Get webhook subscription details
+  - method: PATCH
+    path: /webhooks/{webhookId}
+    summary: Update webhook subscription
+  - method: DELETE
+    path: /webhooks/{webhookId}
+    summary: Cancel webhook subscription
+  - method: POST
+    path: /webhooks/{webhookId}/rotate-secret
+    summary: Rotate secret
+  - method: GET
+    path: /webhooks/{webhookId}/failed-notifications
+    summary: Get failed notifications
+
+events:
+  payment:
+    - PAYMENT_CREATED
+    - PAYMENT_PLANIFIED
+    - PAYMENT_FINALIZED
+    - PAYMENT_WAITING_SIGNATURE
+    - PAYMENT_AWAITING_CONFIRMATION
+    - PAYMENT_CANCELED
+    - PAYMENT_BLOCKED
+    - PAYMENT_WAITING_JUSTIFICATION
+    - PAYMENT_INCOMING
+  trade:
+    - TRADE_PLANIFIED
+    - TRADE_FINALIZED
+    - TRADE_CANCELED
+    - TRADE_BLOCKED
+event_count: 13
+events_source: components.schemas.events enum in openapi/ibanfirst-clientapi-openapi.yml
+
+payload:
+  schema: notificationContent
+  shape:
+    event: event label that triggered the notification
+    payload: >-
+      The full object - identical to the body of "Get payment details" or "Get trade details" for
+      the corresponding resource.
+    webhookId: the subscription that produced the notification
+  content_type: application/json
+
+security:
+  signature:
+    header: x-ibanfirst-signature
+    timestamp_header: x-ibanfirst-timestamp
+    algorithm: HMAC-SHA256
+    signed_message: '{x-ibanfirst-timestamp}.{raw request body}'
+    secret: >-
+      The subscription secret, 32-64 alphanumeric characters, returned when the subscription is
+      created; rotatable via POST /webhooks/{webhookId}/rotate-secret.
+    verification_rule: >-
+      "reject the notification if the signatures do not match" - compare against the RAW body,
+      before any JSON re-serialisation.
+    replay_protection: >-
+      The timestamp is part of the signed message, so a receiver can bound acceptable clock skew.
+      No explicit tolerance window is published.
+
+delivery:
+  retry_on: [400, 500]
+  retries: 2
+  total_attempts: 3
+  retry_delay_seconds: 60
+  failure_log:
+    operation: 'GET /webhooks/{webhookId}/failed-notifications'
+    schema: webhookFailedNotification
+    fields:
+      - id
+      - notificationContent
+      - errorMessage
+      - httpStatusCode
+      - failedAt
+      - retryCount
+  note: >-
+    Three attempts over roughly two minutes is a short envelope for a payments event. A receiver
+    that is down for more than ~2 minutes loses the notification and must reconcile by polling
+    GET /payments/{status} or GET /trades/_{status}.
+
+streaming:
+  present: false
+  note: No SSE, WebSocket, Kafka, or message-queue surface is published.
+
+gaps:
+  - No AsyncAPI document.
+  - No per-event payload schema in the machine-readable contract (payload is described by reference to the REST detail operations).
+  - No documented signature tolerance window.
+  - No dead-letter or manual redelivery operation - failures can be listed but not replayed.
+
+x-evidence:
+  fetched: '2026-08-17'
+  probes:
+    - url: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+      http_status: 200
+    - url: https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml
+      http_status: 200
+    - url: https://api.github.com/orgs/ibanfirst/repos
+      http_status: 200
+      note: zero public repositories

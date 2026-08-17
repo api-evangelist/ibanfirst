@@ -1,0 +1,189 @@
+generated: '2026-08-17'
+method: derived
+source: >-
+  mcp/ibanfirst-mcp.yml (tool list from https://docs.ibanfirst.com/guides/mcp-connector) bound
+  against openapi/ibanfirst-clientapi-openapi.yml (iBanFirst API 1.6.0, 30 paths / 38 operations)
+note: >-
+  IMPORTANT: the iBanFirst OpenAPI declares NO operationId on any of its 38 operations, so
+  every rest[] reference below is the verbatim "METHOD /path" pair from the spec's paths object
+  rather than an operationId. That is the strongest identifier the contract actually publishes;
+  nothing here is invented. Live MCP tools/list is OAuth-gated (HTTP 401), so bindings are made
+  by tool name + the provider's own tool description against the spec path, and confidence is
+  recorded honestly per row.
+
+surfaces:
+  openapi:
+    file: openapi/ibanfirst-clientapi-openapi.yml
+    source: https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml
+    version: 1.6.0
+    servers:
+      - https://api-demo.ibanfirst.com/api
+      - https://api.ibanfirst.com/api
+    operations: 38
+    operation_ids_declared: 0
+    gated: >-
+      Reference and spec are public; calling requires an X-WSSE credential issued by iBanFirst
+      support, so live calls are gated but the contract is not.
+  mcp:
+    url: https://mcp.ibanfirst.com/mcp
+    docs: https://docs.ibanfirst.com/guides/mcp-connector
+    tools: 16
+    gated: >-
+      tools/list returns HTTP 401 invalid_token without an OAuth bearer token, so per-tool
+      inputSchema could not be read; parameters are inherited from the bound REST operation.
+  graphql: null
+  asyncapi: null
+  webhooks:
+    docs: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+    managed_via_rest: true
+
+crosswalk:
+  - tool: get_wallets
+    category: Wallets
+    rest: ['GET /wallets']
+    binding: rest
+    confidence: high
+  - tool: get_wallet_details
+    category: Wallets
+    rest: ['GET /wallets/{id}']
+    binding: rest
+    confidence: high
+  - tool: get_wallet_balance
+    category: Wallets
+    rest: ['GET /wallets/{id}/balance/{date}']
+    binding: rest
+    confidence: high
+  - tool: get_financial_movements
+    category: Financial movements
+    rest: ['GET /financialMovements']
+    binding: rest
+    confidence: high
+    note: >-
+      The tool description caps history at "the last 12 months only"; the REST operation
+      exposes fromDate/toDate query parameters with no documented cap. The MCP tool is the
+      narrower surface.
+  - tool: get_financial_movement_details
+    category: Financial movements
+    rest: ['GET /financialMovements/{id}']
+    binding: rest
+    confidence: high
+  - tool: get_payments_by_status
+    category: Payments
+    rest: ['GET /payments/{status}']
+    binding: rest
+    confidence: high
+  - tool: get_payment_details
+    category: Payments
+    rest: ['GET /payments/{id}']
+    binding: rest
+    confidence: high
+  - tool: get_payment_options
+    category: Payments
+    rest: ['GET /payments/options/{walletId}/{externalBankAccountId}']
+    binding: rest
+    confidence: high
+    note: >-
+      The REST operation requires BOTH a wallet id and a beneficiary id; the tool description
+      only mentions "a given wallet", so the tool may default or require the second argument.
+      Unverifiable without authenticated tools/list.
+  - tool: get_fx_rates
+    category: FX rates & trades
+    rest: ['POST /quotes']
+    binding: rest
+    confidence: medium
+    note: >-
+      "Live indicative FX rates" has no dedicated GET in the REST contract. POST /quotes
+      ("Ask for a spot quote", returns the Quote/Rate schemas) is the only rate-producing
+      operation in the spec, so the tool is almost certainly backed by it — but the mapping
+      is inferred from semantics, not from an authenticated tools/list.
+  - tool: get_trades
+    category: FX rates & trades
+    rest: ['GET /trades/_{status}']
+    binding: rest
+    confidence: high
+    note: The spec path literally contains an underscore before the status template.
+  - tool: get_trade_details
+    category: FX rates & trades
+    rest: ['GET /trades/{id}']
+    binding: rest
+    confidence: high
+  - tool: get_fix_forwards
+    category: Fix-forward trades
+    rest: ['GET /fixed-forwards']
+    binding: rest
+    confidence: high
+  - tool: get_fix_forward
+    category: Fix-forward trades
+    rest: ['GET /fixed-forwards/{fixedForwardId}']
+    binding: rest
+    confidence: high
+  - tool: get_external_bank_accounts
+    category: Beneficiaries
+    rest: ['GET /externalBankAccounts']
+    binding: rest
+    confidence: high
+  - tool: get_external_bank_account_by_id
+    category: Beneficiaries
+    rest: ['GET /externalBankAccounts/{id}']
+    binding: rest
+    confidence: high
+
+mcp_only:
+  - tool: disconnect_ibanfirst_mcp
+    reason: >-
+      Connector session management. Detaches the iBanFirst account from the MCP client; there
+      is no REST equivalent because X-WSSE is stateless and has no session to tear down.
+
+rest_only:
+  - capability: Account provisioning
+    operations: ['POST /wallets']
+  - capability: Beneficiary management (write)
+    operations:
+      - 'POST /externalBankAccounts'
+      - 'DELETE /externalBankAccounts/{id}'
+  - capability: Payment initiation and lifecycle
+    operations:
+      - 'POST /payments'
+      - 'PUT /payments/{id}/confirm'
+      - 'PUT /payments/{id}/proofOfTransaction'
+      - 'DELETE /payments/{id}'
+  - capability: Spot trade booking
+    operations: ['POST /trades']
+  - capability: Fixed forward quoting and booking
+    operations:
+      - 'POST /fixed-forwards/quote'
+      - 'POST /fixed-forwards'
+  - capability: Documents
+    operations:
+      - 'GET /documents'
+      - 'GET /documents/{id}'
+      - 'GET /documents/RIB'
+      - 'PUT /documents/upload/{object}/{objectId}/{typeOfDocumentation}'
+  - capability: Webhook subscription management
+    operations:
+      - 'POST /webhooks'
+      - 'GET /webhooks'
+      - 'GET /webhooks/{webhookId}'
+      - 'PATCH /webhooks/{webhookId}'
+      - 'DELETE /webhooks/{webhookId}'
+      - 'POST /webhooks/{webhookId}/rotate-secret'
+      - 'GET /webhooks/{webhookId}/failed-notifications'
+  - capability: API call logs
+    operations:
+      - 'GET /logs'
+      - 'GET /logs/{nonce}'
+
+coverage:
+  tools_named: 16
+  tools_bound_to_rest: 15
+  mcp_only: 1
+  rest_operations_total: 38
+  rest_operations_with_a_tool: 15
+  rest_operations_without_a_tool: 23
+  rest_coverage_pct: 39
+  divergence: >-
+    The MCP surface is read-only: every one of the 15 bound tools is a GET, or (for get_fx_rates)
+    a non-mutating quote POST. All 23 unbound REST operations that write — creating payments,
+    confirming payments, booking trades and forwards, managing beneficiaries and webhooks — have
+    no agent tool. An agent connected to iBanFirst can read a treasury position and quote a rate
+    but cannot move money.

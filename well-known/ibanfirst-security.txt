@@ -1,0 +1,7 @@
+Contact: mailto:security.txt@ibanfirst.com
+Expires: 2028-12-30T23:00:00.000Z
+Encryption: https://www.ibanfirst.com/pgp-key.txt
+Acknowledgments: https://www.ibanfirst.com/hall-of-fame.html
+Preferred-Languages: en, fr
+Canonical: https://www.ibanfirst.com/.well-known/security.txt
+Policy: https://www.ibanfirst.com/security-policy.html

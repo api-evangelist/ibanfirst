@@ -1,0 +1,205 @@
+generated: '2026-08-17'
+method: searched
+source: >-
+  openapi/ibanfirst-clientapi-openapi.yml, https://ibanfirst.com/legal,
+  https://ibanfirst.com/psd2-api, https://ibanfirst.com/security-policy.html, and the RFC 8414 /
+  RFC 9728 metadata served at https://mcp.ibanfirst.com/
+note: >-
+  iBanFirst is a regulated European payment institution, so its strongest published compliance
+  posture is regulatory rather than a security-certification badge. No SOC 2, ISO 27001, PCI DSS,
+  HIPAA or FedRAMP claim appears anywhere on the public site, and there is no trust centre -
+  trust.ibanfirst.com and security.ibanfirst.com were probed and do not serve one. Every entry
+  below carries the evidence it was decided on; `conforms: false` entries were checked and missed.
+
+regulatory:
+  - regime: EU payment institution licence
+    conforms: true
+    regulator: National Bank of Belgium
+    entity: iBanFirst SA (Belgium)
+    identifier: company number 0849.872.824
+    evidence: https://ibanfirst.com/legal
+  - regime: UK entity
+    conforms: true
+    entity: iBanFirst LTD (United Kingdom)
+    evidence: https://ibanfirst.com/legal
+  - regime: PSD2 (Directive (EU) 2015/2366) XS2A
+    conforms: true
+    evidence: >-
+      Dedicated PSD2 API covering AIS, PIS and SCA, with a TPP sandbox at
+      https://open-api-sdbx.ibanfirst.com/Banking/API and eIDAS QWAC onboarding via
+      open-api@ibanfirst.com.
+    source: https://ibanfirst.com/psd2-api
+    note: >-
+      The XS2A profile in use (Berlin Group NextGenPSD2, STET, or proprietary) is NOT stated on the
+      public page, and the sandwich host refuses anonymous TLS, so the standard could not be
+      confirmed. Recorded as PSD2-conformant by the provider's own claim; the profile is unknown.
+  - regime: MiFID II / EMIR
+    conforms: false
+    evidence: >-
+      Explicitly out of scope by the provider's own statement: iBanFirst offers "unregulated spot
+      FX transactions and deliverable forward payment contracts" that are "excluded from MiFID and
+      EMIR regulation" and "does not offer options or any other financial instruments for
+      investment or speculative purposes."
+    source: https://ibanfirst.com/legal
+  - regime: Verification of Payee (EU Instant Payments Regulation)
+    conforms: true
+    evidence: >-
+      Payee verification shipped in API 1.3.0 (2025-11-13) on beneficiary and payment creation,
+      with a dedicated ErrorVOP response variant carrying PARTIAL/FAILED status and proposed name
+      corrections.
+    source: openapi/ibanfirst-clientapi-openapi.yml (components.schemas.ErrorVOP)
+  - regime: SEPA
+    conforms: true
+    evidence: >-
+      SEPA credit transfers and SEPA direct debit (B2B issued and received; Core issued) in the
+      published Pricing Conditions, with the SEPA eligibility criteria restated in Annex B.
+    source: https://info.ibanfirst.com/hubfs/Fees/EN_Fees_brochure_OCT_2025.pdf
+  - regime: SWIFT
+    conforms: true
+    evidence: >-
+      SWIFT payments with SHARE/OUR/BEN charge options priced in the fee schedule, and SWIFT gpi-
+      style payment tracking exposed as a tracker link (API 1.3.0).
+  - regime: GDPR
+    conforms: unknown
+    evidence: >-
+      A privacy policy and cookie policy are published (https://ibanfirst.com/privacy-policy,
+      https://ibanfirst.com/cookie-policy) as expected of an EU-established controller, but no
+      explicit GDPR compliance statement, DPA, or Article 30 record is published at a public URL.
+
+security_certifications:
+  soc2: false
+  iso_27001: false
+  iso_27017: false
+  iso_27018: false
+  pci_dss: false
+  hipaa: false
+  fedramp: false
+  csa_star: false
+  evidence: >-
+    The security policy page (https://ibanfirst.com/security-policy.html) describes controls -
+    access control, encryption, incident response, security training - without naming a single
+    third-party certification. trust.ibanfirst.com and security.ibanfirst.com do not serve a trust
+    centre; probe-security-programs.py recorded trust=none.
+  trust_center: null
+
+standards:
+  - id: openapi-3.0
+    conforms: true
+    evidence: >-
+      openapi: 3.0.0, 30 paths / 38 operations, published at
+      https://docs.ibanfirst.com/_spec/api/ClientAPI.json and .yaml
+  - id: rest
+    conforms: true
+    evidence: >-
+      "organized around REST and designed to have predictable, resource-oriented URLs and use the
+      HTTP response codes to indicate API errors"
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: >-
+      Errors use a proprietary JSON object (errorCode / errorType / errorMessage / link) with
+      Content-Type application/json, not application/problem+json.
+  - id: rfc8594-sunset-header
+    conforms: false
+    evidence: No Sunset or Deprecation header, and no deprecation policy, is documented.
+  - id: rfc9116-security-txt
+    conforms: true
+    evidence: >-
+      /.well-known/security.txt served with Contact, Expires, Encryption, Acknowledgments,
+      Preferred-Languages, Canonical and Policy.
+    file: well-known/ibanfirst-security.txt
+  - id: rfc8414-oauth-authorization-server-metadata
+    conforms: true
+    evidence: >-
+      https://mcp.ibanfirst.com/.well-known/oauth-authorization-server returns 200 with issuer,
+      authorization_endpoint, token_endpoint, registration_endpoint and S256 PKCE support.
+    file: well-known/ibanfirst-mcp-oauth-authorization-server.json
+  - id: rfc9728-oauth-protected-resource-metadata
+    conforms: true
+    evidence: >-
+      https://mcp.ibanfirst.com/.well-known/oauth-protected-resource returns 200 with resource and
+      authorization_servers.
+    file: well-known/ibanfirst-mcp-oauth-protected-resource.json
+  - id: rfc7591-dynamic-client-registration
+    conforms: true
+    evidence: registration_endpoint advertised at https://mcp.ibanfirst.com/register
+  - id: oauth2
+    conforms: true
+    scope: MCP connector only - the REST API has no OAuth surface.
+    evidence: authorization_code + refresh_token grants, S256 PKCE
+  - id: oidc
+    conforms: false
+    evidence: /.well-known/openid-configuration returns 404 on every iBanFirst host probed.
+  - id: mcp
+    conforms: true
+    evidence: >-
+      Hosted remote MCP server at https://mcp.ibanfirst.com/mcp answering JSON-RPC; an
+      unauthenticated tools/list returns a structured 401 invalid_token rather than a transport
+      error.
+  - id: a2a
+    conforms: false
+    evidence: >-
+      /.well-known/agent-card.json and /.well-known/agent.json return 404 on all seven hosts
+      probed. No agent card exists, and none was authored on the provider's behalf.
+  - id: asyncapi
+    conforms: false
+    evidence: >-
+      A real webhook event surface exists (13 event types, HMAC-SHA256 signed) but no AsyncAPI
+      document is published. See asyncapi/ibanfirst-webhooks.yml.
+  - id: rfc9116-hsts
+    conforms: partial
+    evidence: >-
+      HSTS present on www.ibanfirst.com (max-age 63072000) but absent on docs.ibanfirst.com and
+      not returned by api.ibanfirst.com. See security/ibanfirst-domain-security.yml.
+  - id: dnssec
+    conforms: false
+    evidence: ibanfirst.com is not DNSSEC-signed.
+  - id: caa
+    conforms: true
+    evidence: >-
+      CAA present with five permitted issuers plus an iodef contact
+      (mailto:security.caa@ibanfirst.com).
+  - id: spf-dmarc
+    conforms: true
+    evidence: SPF present; DMARC present with policy p=reject.
+  - id: idempotency
+    conforms: false
+    evidence: >-
+      No Idempotency-Key or equivalent parameter on any operation; the string "idempoten" does not
+      appear in the spec or the docs. See conventions/ibanfirst-conventions.yml.
+  - id: pagination
+    conforms: true
+    evidence: page / per_page / sort query parameters on the collection operations.
+    note: >-
+      Page-number pagination with no total count and no next/prev links, so it is a convention
+      rather than a complete contract.
+  - id: fhir-r4
+    conforms: false
+  - id: scim2
+    conforms: false
+  - id: odata
+    conforms: false
+  - id: fapi
+    conforms: false
+    note: >-
+      Relevant to check for a payments/open-banking provider; no FAPI security profile is claimed
+      and the REST API uses a shared-secret digest rather than OAuth with sender-constrained
+      tokens.
+  - id: json-api
+    conforms: false
+
+x-evidence:
+  checked: '2026-08-17'
+  probes:
+    - url: https://ibanfirst.com/legal
+      http_status: 200
+    - url: https://ibanfirst.com/psd2-api
+      http_status: 200
+    - url: https://ibanfirst.com/security-policy.html
+      http_status: 200
+    - url: https://mcp.ibanfirst.com/.well-known/oauth-authorization-server
+      http_status: 200
+    - url: https://mcp.ibanfirst.com/.well-known/openid-configuration
+      http_status: 404
+    - url: https://open-api-sdbx.ibanfirst.com/Banking/API
+      http_status: 0
+      note: anonymous TLS handshake refused

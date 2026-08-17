@@ -1,0 +1,54 @@
+generated: '2026-08-17'
+method: searched
+source: https://docs.ibanfirst.com/api/clientapi
+limit_count: 0
+documented: false
+note: >-
+  iBanFirst publishes NO rate limits for its REST API. This is a searched absence, not an
+  unchecked field: the served OpenAPI (openapi/ibanfirst-clientapi-openapi.yml) and every
+  reference and guide page on docs.ibanfirst.com were searched for "rate limit", "ratelimit",
+  "throttl", "X-RateLimit", "RateLimit-", "Retry-After" and "429", and none of those strings
+  appears anywhere. No 429 response is declared on any of the 38 operations - in fact no 4xx is
+  declared at all, only a catch-all `default`.
+limits: []
+headers: []
+status_on_exhaustion: null
+retry_after: false
+consequence: >-
+  An integrator has no published budget to design against and no runtime signal to back off on. A
+  client cannot distinguish throttling from a generic error, because every non-2xx outcome is
+  bound to the same untyped Error envelope. For an agent - and iBanFirst ships a hosted MCP
+  connector - this is the missing half of safe autonomous polling.
+adjacent_limits_that_ARE_published:
+  - scope: webhook subscriptions
+    limit: 10
+    unit: active subscriptions per user
+    source: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+  - scope: webhook delivery retries
+    limit: 3
+    unit: total delivery attempts per event (2 retries, 60 seconds apart, on HTTP 400/500)
+    source: https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+  - scope: X-WSSE token validity
+    limit: '~300'
+    unit: seconds - the digest must be recomputed for every request
+    source: https://docs.ibanfirst.com/api/clientapi/section/authentication-x-wsse
+  - scope: MCP get_financial_movements
+    limit: 12
+    unit: months of transaction history available to the tool
+    source: https://docs.ibanfirst.com/guides/mcp-connector
+observed:
+  probed_live: false
+  reason: >-
+    Response headers could not be observed on a successful call: every /api/* request without an
+    X-WSSE credential returns 401, and credentials are issued only to customers by the support
+    team. No unauthenticated 200 exists on the API host to read headers from.
+x-evidence:
+  checked: '2026-08-17'
+  probes:
+    - url: https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml
+      http_status: 200
+      note: full-text search for rate-limit terms - zero matches
+    - url: https://docs.ibanfirst.com/api/clientapi
+      http_status: 200
+    - url: https://api.ibanfirst.com/api/docs
+      http_status: 401

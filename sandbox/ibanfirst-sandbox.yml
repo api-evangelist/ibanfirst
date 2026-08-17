@@ -1,0 +1,99 @@
+generated: '2026-08-17'
+method: searched
+source: https://docs.ibanfirst.com/guides/quickstart
+docs:
+  - https://docs.ibanfirst.com/guides/quickstart
+  - https://docs.ibanfirst.com/api/clientapi/section/environments
+  - https://ibanfirst.com/psd2-api
+note: >-
+  iBanFirst runs a separate demo environment on its own host. What it does NOT publish is any test
+  data: no test IBANs, no magic amounts, no simulated decline values, no test clock, and no
+  self-serve way to obtain demo credentials. Nothing below is invented - where the provider
+  publishes no value, the field records the absence.
+
+environments:
+  - name: demo
+    role: testing
+    base_url: https://api-demo.ibanfirst.com/api
+    description: >-
+      "Demo is your testing environement, it is not related to actual account, it contains only
+      test accounts and balances for you to test your integration before going live."
+    separation: separate hostname (not a mode flag or a key prefix)
+    credentials: >-
+      Issued by the iBanFirst support team on request; tokens can be granted per method. There is
+      no public signup for demo access.
+    self_serve: false
+    history: >-
+      Replaced the former "sandbox" environment in API 1.5.0 (2026-01-15); the host was renamed
+      from demo.ibanfirst.com to api-demo.ibanfirst.com in 1.6.1 (2026-03-19).
+    probe:
+      url: https://api-demo.ibanfirst.com/api
+      status: 401
+      note: Answers a JSON 401 without an X-WSSE header, so the host is live and routed.
+  - name: live
+    role: production
+    base_url: https://api.ibanfirst.com/api
+    separation: separate hostname
+  - name: psd2-sandbox
+    role: PSD2 XS2A TPP testing
+    base_url: https://open-api-sdbx.ibanfirst.com/Banking/API
+    description: >-
+      "an open environment allowing to experiment, develop and test TPP applications for PSD2
+      services, covering accounts information, payment initiation and secure customer
+      authentication." The PSD2 page states the sandbox documentation provides credentials for
+      testing.
+    access: requires a qualified eIDAS QWAC; onboarding via open-api@ibanfirst.com
+    probe:
+      url: https://open-api-sdbx.ibanfirst.com/Banking/API
+      status: 0
+      note: >-
+        Anonymous TLS handshake is terminated by the server (curl exit 56), consistent with a
+        listener requiring a client certificate. No credentials or documents could be read.
+
+key_separation:
+  mechanism: host-based
+  test_key_prefix: null
+  live_key_prefix: null
+  note: >-
+    X-WSSE credentials carry no test/live prefix. The only thing that distinguishes a test call
+    from a live one is which hostname it is sent to, so a misconfigured base URL sends real money
+    movement instructions with credentials that look identical.
+
+test_data:
+  test_ibans: []
+  test_amounts: []
+  test_currencies: []
+  decline_simulation: []
+  magic_values: []
+  published: false
+  note: >-
+    No magic test identifiers, test IBANs, or trigger values are published. The demo environment
+    is described as containing pre-seeded "test accounts and balances", but those values are only
+    visible to a customer with demo credentials.
+
+time_simulation:
+  test_clock: false
+  note: >-
+    No test clock or time-travel facility. Fixed forward contracts have future settlement dates,
+    which cannot be simulated forward in the demo environment by any published mechanism.
+
+fixtures_and_triggers:
+  cli: null
+  event_trigger_tool: null
+  webhook_forwarding: null
+  note: >-
+    No CLI, no event-trigger command, no local webhook tunnel. Webhooks in demo must be pointed at
+    a publicly reachable URL created by the integrator.
+
+interactive_console:
+  docs_try_it: true
+  note: >-
+    The Redocly docs portal renders a "Try it" console and a developer-app UI (create app, API
+    keys, roll/revoke), but the app UI requires a portal login.
+  postman: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+
+gaps:
+  - Demo credentials are not self-serve; access requires a support request.
+  - No published test data of any kind.
+  - No test/live key prefix - environment safety depends entirely on the base URL.
+  - No test clock, no fixture generator, no event trigger tooling.

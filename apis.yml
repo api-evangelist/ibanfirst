@@ -1,25 +1,225 @@
 aid: ibanfirst
 name: iBanFirst
-description: 'iBanFirst is a company surfaced as a portfolio company of serena and added to the API Evangelist
-  network as a stub for enrichment. Sector: fintech-insurtech. This profile is a lead awaiting the enrichment
-  pipeline.'
+description: >-
+  iBanFirst is a Brussels-headquartered cross-border payment and foreign-exchange platform for
+  businesses, licensed as a payment institution by the National Bank of Belgium (company number
+  0849.872.824) and operating across Belgium, France, the Netherlands, Germany, Spain, Romania,
+  Bulgaria, Italy, Hungary and the United Kingdom. It provides multi-currency "augmented currency
+  accounts" with dedicated IBANs, SWIFT and SEPA payments with payment tracking, spot FX in 30+
+  currencies, and fixed forward payment contracts for currency-risk hedging. Its developer surface
+  is a public REST API (iBanFirst API 1.6.0, 38 operations over accounts, financial movements,
+  beneficiaries, payments, spot trades, fixed forwards, documents and webhook subscriptions),
+  X-WSSE token authentication, HMAC-SHA256-signed webhooks for payment and trade events, a
+  separate eIDAS/QWAC-gated PSD2 XS2A API for AIS and PIS third-party providers, and a hosted
+  first-party remote MCP server that gives agents read access to treasury data.
+image: https://ibanfirst.com/_next/static/media/iban-og-image.1rlnmbejef6_m.jpg
 url: https://raw.githubusercontent.com/api-evangelist/ibanfirst/refs/heads/main/apis.yml
 x-type: company
 x-source: serena-portfolio
-x-tier: stub
-x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-08-17'
 modified: '2026-08-17'
 tags:
-- Company
-- Fintech Insurtech
-apis: []
-maintainers:
-- FN: Kin Lane
-  email: kin@apievangelist.com
-- FN: APIs.json
-  email: info@apis.io
+  - Company
+  - Fintech Insurtech
+  - cross-border-payments
+  - foreign-exchange
+  - b2b-payments
+  - treasury
+  - multi-currency-accounts
+  - swift
+  - sepa
+  - psd2
+  - open-banking
+  - currency-risk-management
+  - webhooks
+  - mcp
+  - belgium
+  - europe
+apis:
+  - name: iBanFirst API
+    description: >-
+      REST API for automated cross-border payments and currency exchange: manage multi-currency
+      accounts (wallets) and their IBANs, read balances and financial movements, create and delete
+      beneficiaries with payee verification, price and initiate payments (with speed and priority
+      options and proof-of-transaction upload), request spot FX quotes and book spot trades, quote
+      and book fixed forward payment contracts, pull account documents and RIBs, and manage
+      HMAC-signed webhook subscriptions for payment and trade events. Authentication is a
+      per-request X-WSSE UsernameToken digest; credentials are issued by iBanFirst support.
+    humanURL: https://docs.ibanfirst.com/api/clientapi
+    baseURL: https://api.ibanfirst.com/api
+    tags:
+      - cross-border-payments
+      - foreign-exchange
+      - b2b-payments
+      - treasury
+      - multi-currency-accounts
+      - swift
+      - sepa
+      - webhooks
+    properties:
+      - type: OpenAPI
+        url: openapi/ibanfirst-clientapi-openapi.yml
+      - type: Documentation
+        url: https://docs.ibanfirst.com/
+      - type: APIReference
+        url: https://docs.ibanfirst.com/api/clientapi
+      - type: GettingStarted
+        url: https://docs.ibanfirst.com/guides/quickstart
+      - type: Postman
+        url: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+      - type: Authentication
+        url: authentication/ibanfirst-authentication.yml
+      - type: Conventions
+        url: conventions/ibanfirst-conventions.yml
+      - type: ErrorCatalog
+        url: errors/ibanfirst-problem-types.yml
+      - type: DataModel
+        url: data-model/ibanfirst-data-model.yml
+      - type: Webhooks
+        url: asyncapi/ibanfirst-webhooks.yml
+      - type: Sandbox
+        url: sandbox/ibanfirst-sandbox.yml
+      - type: Overlay
+        url: overlays/ibanfirst-clientapi-overlay.yaml
+      - type: Glossary
+        url: https://docs.ibanfirst.com/glossary
+  - name: iBanFirst MCP Connector
+    description: >-
+      First-party hosted remote MCP server, launched with API 1.7.0 on 2026-06-05, exposing 16
+      read tools over wallets, balances, financial movements, payments, live FX rates, spot trades,
+      fixed forwards and beneficiaries. Documented as a Claude.ai / Claude Desktop custom
+      connector; authentication is OAuth 2.0 with dynamic client registration (RFC 8414 + RFC 9728
+      metadata served at the endpoint). tools/list is OAuth-gated. No write tools are exposed.
+    humanURL: https://docs.ibanfirst.com/guides/mcp-connector
+    baseURL: https://mcp.ibanfirst.com/mcp
+    tags:
+      - mcp
+      - agent-native
+      - treasury
+      - foreign-exchange
+      - cross-border-payments
+    properties:
+      - type: MCPServer
+        url: mcp/ibanfirst-mcp.yml
+      - type: MCPServer
+        url: https://mcp.ibanfirst.com/mcp
+      - type: ToolCrosswalk
+        url: mcp/ibanfirst-tool-crosswalk.yml
+      - type: Documentation
+        url: https://docs.ibanfirst.com/guides/mcp-connector
+      - type: Authentication
+        url: authentication/ibanfirst-authentication.yml
+  - name: iBanFirst PSD2 XS2A API
+    description: >-
+      PSD2 access-to-account API for registered third-party providers, covering account
+      information services (AIS), payment initiation services (PIS) and strong customer
+      authentication. A sandbox is published for TPP development and testing. Access requires a
+      qualified eIDAS QWAC certificate; onboarding is by request to open-api@ibanfirst.com. The
+      sandbox host terminates anonymous TLS handshakes, so no machine-readable specification for
+      this API could be retrieved without a client certificate.
+    humanURL: https://ibanfirst.com/psd2-api
+    baseURL: https://open-api-sdbx.ibanfirst.com/Banking/API
+    tags:
+      - psd2
+      - open-banking
+      - account-information
+      - payment-initiation
+      - regulatory
+    properties:
+      - type: Documentation
+        url: https://ibanfirst.com/psd2-api
+      - type: Compliance
+        url: https://ibanfirst.com/psd2-api
+      - type: Support
+        url: mailto:open-api@ibanfirst.com
 common:
-- type: Website
-  url: https://www.ibanfirst.com/
+  - type: Website
+    url: https://www.ibanfirst.com/
+  - type: DeveloperPortal
+    url: https://docs.ibanfirst.com/
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Support
+    url: https://support.ibanfirst.com/en/
+  - type: Blog
+    url: https://blog.ibanfirst.com/en
+  - type: GitHubOrganization
+    url: https://github.com/iBanFirst
+  - type: Pricing
+    url: https://ibanfirst.com/fees
+  - type: SignUp
+    url: https://info.ibanfirst.com/en/request-an-account
+  - type: Login
+    url: https://platform.ibanfirst.com/login?lang=en
+  - type: TermsOfService
+    url: https://ibanfirst.com/terms
+  - type: PrivacyPolicy
+    url: https://ibanfirst.com/privacy-policy
+  - type: Postman
+    url: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: ChangeLog
+    url: https://docs.ibanfirst.com/changelog
+  - type: ChangeLog
+    url: changelog/ibanfirst-changelog.yml
+  - type: LLMsTxt
+    url: llms/ibanfirst-llms.txt
+  - type: LLMsTxt
+    url: https://www.ibanfirst.com/llms.txt
+  - type: WellKnown
+    url: well-known/ibanfirst-well-known.yml
+  - type: SecurityTxt
+    url: well-known/ibanfirst-security.txt
+  - type: Security
+    url: https://ibanfirst.com/security-policy.html
+  - type: VulnerabilityDisclosure
+    url: security/ibanfirst-vulnerability-disclosure.yml
+  - type: DomainSecurity
+    url: security/ibanfirst-domain-security.yml
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: Conformance
+    url: conformance/ibanfirst-conformance.yml
+  - type: Compliance
+    url: https://ibanfirst.com/psd2-api
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: Lifecycle
+    url: lifecycle/ibanfirst-lifecycle.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Packages
+    url: packages/ibanfirst-packages.yml
+  - type: Plans
+    url: plans/ibanfirst-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/ibanfirst-rate-limits.yml
+  - type: AgentSkill
+    url: skills/_index.yml
+  - type: MCPServer
+    url: mcp/ibanfirst-mcp.yml
+  - type: Overlay
+    url: overlays/ibanfirst-clientapi-overlay.yaml
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com
+  - FN: APIs.json
+    email: info@apis.io
+x-enrichment:
+  date: '2026-08-17'
+  status: enriched
+  artifacts_added: 30
+  pass: local-v1
+x-coverage:
+  state: covered
+  checked: '2026-08-17'

@@ -1,0 +1,98 @@
+generated: '2026-08-17'
+method: generated
+source: >-
+  openapi/ibanfirst-clientapi-openapi.yml (iBanFirst API 1.6.0) plus the conventions, errors,
+  webhooks, data-model and MCP artifacts in this repo.
+note: >-
+  Five packaged Agent Skills, one per marquee flow of the iBanFirst API. GROUNDING CAVEAT: the
+  published OpenAPI declares NO operationId on any of its 38 operations, so every skill references
+  operations by the verbatim "METHOD /path" from the spec's paths object. No operationId was
+  invented. iBanFirst publishes one skill of its own - ibanfirst-excel-sync, at
+  https://docs.ibanfirst.com/guides/excel - but it is distributed as copy-paste text into Claude
+  Project Knowledge rather than as a fetchable file, so it is recorded as a reference below rather
+  than saved verbatim.
+skills:
+  - file: ibanfirst-pay-a-supplier.md
+    name: Pay a supplier abroad with iBanFirst
+    api: openapi/ibanfirst-clientapi-openapi.yml
+    operations:
+      - 'GET /wallets'
+      - 'POST /externalBankAccounts'
+      - 'GET /externalBankAccounts'
+      - 'GET /payments/options/{walletId}/{externalBankAccountId}'
+      - 'POST /payments'
+      - 'PUT /payments/{id}/confirm'
+      - 'GET /payments/{id}'
+      - 'DELETE /payments/{id}'
+      - 'GET /logs/{nonce}'
+    human_gate_required: true
+    covers: [beneficiary registration, verification of payee, payment pricing, create/confirm, duplicate reconciliation]
+  - file: ibanfirst-quote-and-book-spot-fx.md
+    name: Quote and book a spot FX trade with iBanFirst
+    api: openapi/ibanfirst-clientapi-openapi.yml
+    operations:
+      - 'GET /wallets'
+      - 'POST /quotes'
+      - 'POST /trades'
+      - 'GET /trades/{id}'
+      - 'GET /trades/_{status}'
+      - 'GET /logs/{nonce}'
+    human_gate_required: true
+    covers: [spot quote, margin from the Rate object, trade booking, settlement reconciliation]
+  - file: ibanfirst-hedge-with-fixed-forward.md
+    name: Hedge currency risk with an iBanFirst fixed forward payment contract
+    api: openapi/ibanfirst-clientapi-openapi.yml
+    operations:
+      - 'GET /wallets'
+      - 'POST /fixed-forwards/quote'
+      - 'POST /fixed-forwards'
+      - 'GET /fixed-forwards'
+      - 'GET /fixed-forwards/{fixedForwardId}'
+    human_gate_required: true
+    covers: [forward quote expiry, published initial-collateral schedule, booking, tracking]
+  - file: ibanfirst-subscribe-to-payment-events.md
+    name: Subscribe to iBanFirst payment and trade events
+    api: openapi/ibanfirst-clientapi-openapi.yml
+    operations:
+      - 'POST /webhooks'
+      - 'GET /webhooks'
+      - 'GET /webhooks/{webhookId}'
+      - 'PATCH /webhooks/{webhookId}'
+      - 'DELETE /webhooks/{webhookId}'
+      - 'POST /webhooks/{webhookId}/rotate-secret'
+      - 'GET /webhooks/{webhookId}/failed-notifications'
+      - 'GET /payments/{id}'
+      - 'GET /trades/{id}'
+    human_gate_required: partial
+    covers: [13 event types, HMAC-SHA256 signature verification, 3-attempt retry envelope, secret rotation, failure log]
+  - file: ibanfirst-read-treasury-position.md
+    name: Read an iBanFirst treasury position
+    api: openapi/ibanfirst-clientapi-openapi.yml
+    mcp: https://mcp.ibanfirst.com/mcp
+    operations:
+      - 'GET /wallets'
+      - 'GET /wallets/{id}'
+      - 'GET /wallets/{id}/balance/{date}'
+      - 'GET /financialMovements'
+      - 'GET /financialMovements/{id}'
+      - 'GET /payments/{status}'
+      - 'GET /externalBankAccounts'
+      - 'GET /documents/RIB'
+    human_gate_required: false
+    covers: [multi-currency position, statement lines, in-flight payments, REST vs MCP surface parity]
+skill_count: 5
+provider_published_skills:
+  - name: ibanfirst-excel-sync
+    url: https://docs.ibanfirst.com/guides/excel
+    surface: MCP
+    distribution: copy-paste text into Claude Project Knowledge; no downloadable file
+    saved_verbatim: false
+    tools_used:
+      - get_wallets
+      - get_wallet_details
+      - get_wallet_balance
+      - get_financial_movements
+      - get_payments_by_status
+      - get_payment_details
+      - get_fx_rates
+      - get_external_bank_accounts

@@ -1,0 +1,74 @@
+# iBanFirst
+
+Make fast and reliable payments anywhere in the world using iBanFirst´s all-in-one platform. Open your account today and benefit tomorrow.
+
+## Getting Started
+
+- [Open an account](https://info.ibanfirst.com/en/request-an-account): Start your journey with iBanFirst by opening an account to access their payment solutions.
+- [Login](https://platform.ibanfirst.com/login?lang=en): Access your existing iBanFirst account to manage your payments and transactions.
+- [Try the interactive demo](https://ibanfirst.com/product-tour): Experience the features of the iBanFirst platform through an interactive demo.
+
+## Payment Solutions
+
+- [Pay suppliers abroad](https://ibanfirst.com/solutions/pay-suppliers-abroad): Learn how to efficiently pay your international suppliers using iBanFirst.
+- [Get paid in a foreign currency](https://ibanfirst.com/solutions/get-paid-in-a-foreign-currency): Discover the benefits of receiving payments in different currencies.
+- [Manage intercompany flows](https://ibanfirst.com/solutions/manage-intercompany-flows): Explore solutions for managing financial transactions between different branches of your company.
+- [Manage international investments](https://ibanfirst.com/solutions/manage-international-investments): Understand how to handle your investments across borders with iBanFirst.
+
+## Currency Management
+
+- [Should you pay your trade partners in their local currency?](https://blog.ibanfirst.com/en/paying-suppliers-in-their-local-currency): An informative guide on the advantages and disadvantages of paying in local currencies.
+- [How to implement a currency risk management strategy in 4 steps](https://blog.ibanfirst.com/en/how-to-implement-a-currency-hedging-strategy-in-4-steps): A step-by-step approach to managing currency risks effectively.
+
+## Resources and Tools
+
+- [Savings calculator](https://ibanfirst.com/savings-calculator): Use this tool to estimate potential savings when using iBanFirst services.
+- [FX risk management simulator](https://ibanfirst.com/fx-risk-management-simulator): Simulate different scenarios to understand foreign exchange risks.
+- [Resource library](https://ibanfirst.com/resource-library): Access a collection of resources to enhance your understanding of international payments.
+- [Currency reference centre](https://ibanfirst.com/currency-reference-centre): A comprehensive guide to various currencies and their exchange rates.
+- [iBanChecker](https://ibanfirst.com/iban-checker): A tool to verify IBANs for accurate international transactions.
+
+## Support and Information
+
+- [Help centre](https://support.ibanfirst.com/en/): Find answers to common questions and get support for your iBanFirst account.
+- [FAQ](https://ibanfirst.com/faq): A list of frequently asked questions regarding iBanFirst services.
+- [Glossary](https://ibanfirst.com/glossary): Definitions of key terms related to international payments and currency management.
+
+## Company Information
+
+- [Company](https://ibanfirst.com/about-us): Learn more about iBanFirst and its mission.
+- [Careers](https://ibanfirst.com/careers): Explore job opportunities at iBanFirst.
+- [Become a partner](https://ibanfirst.com/become-a-partner): Information on partnership opportunities with iBanFirst.
+- [Newsroom](https://ibanfirst.com/newsroom): Stay updated with the latest news and announcements from iBanFirst.
+
+## Legal and Compliance
+
+- [Privacy Policy](https://ibanfirst.com/privacy-policy): Understand how iBanFirst handles your personal data.
+- [Cookie Policy](https://ibanfirst.com/cookie-policy): Learn about the use of cookies on the iBanFirst website.
+- [Terms of use](https://ibanfirst.com/terms): Review the terms and conditions for using iBanFirst services.
+- [Legal](https://ibanfirst.com/legal): Access legal information related to iBanFirst operations.
+- [Complaints](https://ibanfirst.com/complaints): Procedures for submitting complaints regarding iBanFirst services.
+- [Whistleblowing](https://ibanfirst.com/whistleblowing): Information on how to report unethical behavior within the company.
+- [Fees](https://ibanfirst.com/fees): A detailed overview of the fees associated with iBanFirst services.
+
+## Technical Resources
+
+- [PSD2 API](https://ibanfirst.com/psd2-api): Information on the Payment Services Directive 2 API offered by iBanFirst.
+- [API Doc](https://docs.ibanfirst.com/): Documentation for developers on how to integrate with iBanFirst's API.
+- [Security acknowledgments](https://ibanfirst.com/hall-of-fame.html): Acknowledgments regarding the security measures in place at iBanFirst.
+- [Security Policy](https://ibanfirst.com/security-policy.html): Detailed information on the security policies that protect user data.
+
+## Additional Information
+
+- [Trustpilot](https://www.trustpilot.com/review/ibanfirst.com): Read reviews and ratings of iBanFirst from customers on Trustpilot.
+- [Explore the blog](https://blog.ibanfirst.com/en): Access the iBanFirst blog for insights and updates on international payments.
+- [Learn more](https://ibanfirst.com/platform/augmented-currency-accounts): General information about iBanFirst services and features.
+- [Learn more](https://ibanfirst.com/platform/cross-border-payments): Additional resources to understand the benefits of using iBanFirst.
+- [Learn more](https://ibanfirst.com/platform/international-payment-tracking): Further insights into the iBanFirst platform.
+- [Learn more](https://ibanfirst.com/platform/currency-risk-management): More information on how iBanFirst can assist with your payment needs.
+- [iBanFirst](https://nl.ibanfirst.com/): Overview of the iBanFirst platform and its capabilities.
+- [iBanFirst](https://fr.ibanfirst.com/): Additional details about the services offered by iBanFirst.
+- [iBanFirst](https://ro.ibanfirst.com/): More insights into the iBanFirst payment solutions.
+- [iBanFirst](https://es.ibanfirst.com/): Further information on the iBanFirst platform.
+- [iBanFirst](https://bg.ibanfirst.com/): Comprehensive details about iBanFirst services.
+- [iBanFirst](https://de.ibanfirst.com/): Additional context regarding the iBanFirst platform and its offerings.

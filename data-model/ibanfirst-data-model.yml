@@ -1,0 +1,354 @@
+generated: '2026-08-17'
+method: derived
+source: openapi/ibanfirst-clientapi-openapi.yml
+note: >-
+  Entity graph derived from the OpenAPI components.schemas ($ref links plus id-reference fields
+  such as sourceWalletId and externalBankAccountId). 42 schemas are declared, of which 14 are
+  entities and the rest are shared value types (Amount, Currency, Date, CurrencyPair, ID, ...).
+  Relationships expressed by an id field are typed by NAME, because the spec declares them only as
+  the shared `ID` scalar - it never $refs the target entity, so the graph is inferred from field
+  naming and confirmed against the operations that consume those ids. Confidence is recorded per
+  edge.
+
+entities:
+  - name: Wallet
+    label: Account / augmented currency account
+    description: Representation of a Wallet - a currency-denominated iBanFirst account with its own IBAN.
+    id_field: id
+    key_fields: [id, currency, tag, status, accountNumber]
+    embedded: [correspondentBank -> CorrespondantBank, holderBank -> HolderBank, holder -> Holder]
+    operations:
+      - 'POST /wallets'
+      - 'GET /wallets'
+      - 'GET /wallets/{id}'
+      - 'GET /wallets/{id}/balance/{date}'
+    note: >-
+      "Wallet" in the contract, "account" in the product and in the MCP tool names (get_wallets).
+      accountNumber carries the IBAN or local account number.
+  - name: Balance
+    label: Account balance at a date
+    id_field: null
+    key_fields: [closingDate, bookingAmount, valueAmount]
+    operations: ['GET /wallets/{id}/balance/{date}']
+    note: >-
+      A value object, not an addressable resource - only reachable through its parent wallet and a
+      date.
+  - name: FinancialMovement
+    label: Transaction / statement line
+    id_field: id
+    key_fields: [id, bookingDate, valueDate, orderingAccountNumber, beneficiaryAccountNumber,
+      orderingAmount, beneficiaryAmount, remittanceInformation, exchangeRate, typeLabel,
+      internalReference]
+    operations:
+      - 'GET /financialMovements'
+      - 'GET /financialMovements/{id}'
+    note: >-
+      Deliberately denormalised: counterparties are free-form strings (orderingCustomer,
+      beneficiaryInstitution) and account references are account NUMBERS, not entity ids, so a
+      movement cannot be joined back to a Wallet or ExternalBankAccount by id - only by matching
+      accountNumber. This is the weakest join in the model.
+  - name: ExternalBankAccount
+    label: Beneficiary
+    id_field: id
+    key_fields: [id, currency, tag, accountNumber, contactEmail]
+    embedded: [correspondentBank -> CorrespondantBank, holderBank -> HolderBank, holder -> Holder]
+    operations:
+      - 'POST /externalBankAccounts'
+      - 'GET /externalBankAccounts'
+      - 'GET /externalBankAccounts/{id}'
+      - 'DELETE /externalBankAccounts/{id}'
+    note: >-
+      Creation is subject to verification of payee; a mismatch returns ErrorVOP with a proposed
+      account_holder_name / account_holder_type correction. contactEmail added in API 1.4.0.
+  - name: Payment
+    label: Outgoing payment
+    id_field: id
+    key_fields: [id, status, createdDate, desiredExecutionDate, executionDate, amount,
+      counterValue, tag, communication, tracker]
+    references:
+      sourceWalletId: Wallet
+      externalBankAccountId: ExternalBankAccount
+    embedded: [amount -> Amount, counterValue -> Amount, rate -> Rate, feePaymentAmount -> Amount,
+      priorityPaymentOption -> paymentPriorityOption, speedOption -> paymentSpeedOption]
+    operations:
+      - 'GET /payments/options/{walletId}/{externalBankAccountId}'
+      - 'POST /payments'
+      - 'PUT /payments/{id}/confirm'
+      - 'PUT /payments/{id}/proofOfTransaction'
+      - 'GET /payments/{status}'
+      - 'GET /payments/{id}'
+      - 'DELETE /payments/{id}'
+    note: >-
+      Two-phase: created then confirmed. speedOption added in 1.6.0; tracker (SWIFT payment
+      tracker link) added in 1.3.0 and is not available for all payments.
+  - name: PaymentOption
+    label: Available payment options and fee estimate
+    id_field: null
+    key_fields: [paymentOption]
+    operations: ['GET /payments/options/{walletId}/{externalBankAccountId}']
+    note: >-
+      Declared as an untyped `object` wrapper in the spec - the only entity whose shape is not
+      described. An integrator cannot know the fields without calling it.
+  - name: Quote
+    label: Spot FX quote
+    id_field: id
+    key_fields: [id, appliedRate, currencyPair, sourceAmount, deliveredAmount, createdDate,
+      deliveryDate]
+    operations: ['POST /quotes']
+  - name: Trade
+    label: Spot FX trade
+    id_field: id
+    key_fields: [id, appliedRate, currencyPair, sourceAmount, deliveredAmount, createdDate,
+      deliveryDate, tag]
+    operations:
+      - 'POST /trades'
+      - 'GET /trades/_{status}'
+      - 'GET /trades/{id}'
+  - name: TradeReconciliation
+    label: Trade with settlement legs
+    id_field: id
+    key_fields: [id, status, appliedRate, side, sourceAmount, deliveredAmount,
+      accountSourceNumber, accountTargetNumber]
+    references:
+      sourceWalletId: Wallet
+      deliveryWalletId: Wallet
+    embedded: [rate -> Rate]
+    note: >-
+      The richer projection of a trade, naming both wallet legs by id AND by account number. Its
+      description in the spec is a copy-paste of Trade's ("Representation of a Trade.").
+  - name: FixedForwardQuote
+    label: Fixed forward payment contract quote
+    id_field: quoteId
+    key_fields: [quoteId, currencyPair, sourceAmount, deliveredAmount, appliedRate, expiresAt]
+    operations: ['POST /fixed-forwards/quote']
+    note: >-
+      The only entity in the model with an explicit expiry (expiresAt, fractional-second
+      timestamp) - the quote must be booked before it lapses.
+  - name: FixedForwardTrade
+    label: Fixed forward payment contract
+    id_field: fixedForwardId
+    key_fields: [fixedForwardId, appliedRate, currencyPair, sourceAmount, deliveredAmount,
+      createdDate, deliveryDate, status, side]
+    references:
+      sourceAccountId: Wallet
+      deliveryAccountId: Wallet
+    operations:
+      - 'POST /fixed-forwards'
+      - 'GET /fixed-forwards'
+      - 'GET /fixed-forwards/{fixedForwardId}'
+    note: >-
+      Uses fixedForwardId rather than id, and sourceAccountId / deliveryAccountId rather than the
+      sourceWalletId / deliveryWalletId naming used by Payment and TradeReconciliation - the same
+      relationship spelled two ways in one contract.
+  - name: Rate
+    label: FX rate
+    id_field: null
+    key_fields: [currencyPair, midMarket, date, coreAsk, coreBid, appliedAsk, appliedBid]
+    note: >-
+      Carries both the core (mid/raw) and applied (client) bid and ask, so the client-visible
+      margin is computable from a single Rate object.
+  - name: Document
+    label: Account document
+    id_field: id
+    key_fields: [id, name, type, createdDate, lastOpennedDate, mimeType, link]
+    operations:
+      - 'GET /documents'
+      - 'GET /documents/{id}'
+      - 'GET /documents/RIB'
+      - 'PUT /documents/upload/{object}/{objectId}/{typeOfDocumentation}'
+    note: >-
+      `link` is a one-time download URL. Upload is polymorphic - {object} + {objectId} attach a
+      document to another entity, which is the only generic association in the model.
+  - name: Webhook
+    label: Webhook subscription
+    id_field: webhookId
+    key_fields: [webhookId, events, url]
+    operations:
+      - 'POST /webhooks'
+      - 'GET /webhooks'
+      - 'GET /webhooks/{webhookId}'
+      - 'PATCH /webhooks/{webhookId}'
+      - 'DELETE /webhooks/{webhookId}'
+      - 'POST /webhooks/{webhookId}/rotate-secret'
+    detail: asyncapi/ibanfirst-webhooks.yml
+  - name: webhookFailedNotification
+    label: Failed webhook delivery
+    id_field: id
+    key_fields: [id, notificationContent, errorMessage, httpStatusCode, failedAt, retryCount]
+    references:
+      notificationContent.webhookId: Webhook
+    operations: ['GET /webhooks/{webhookId}/failed-notifications']
+  - name: Log
+    label: API call log
+    id_field: id
+    key_fields: [id, createdAt, closedAt, tokenNonce, remoteAddress, requestMethod, uriRequested,
+      parametersGiven, requestBody, httpResponseCode, responseBody, restErrorTypeId, login,
+      legalname]
+    operations:
+      - 'GET /logs'
+      - 'GET /logs/{nonce}'
+    note: >-
+      Keyed for retrieval by the X-WSSE nonce, and it stores the full requestBody and responseBody.
+      restErrorTypeId is the closest thing the contract has to an error-code registry, and its
+      values are not documented.
+
+relationships:
+  - from: Wallet
+    to: Balance
+    type: has_many
+    via: 'GET /wallets/{id}/balance/{date}'
+    confidence: high
+  - from: Wallet
+    to: Payment
+    type: has_many
+    via: sourceWalletId
+    inverse: belongs_to
+    confidence: high
+  - from: ExternalBankAccount
+    to: Payment
+    type: has_many
+    via: externalBankAccountId
+    inverse: belongs_to
+    confidence: high
+  - from: Payment
+    to: Rate
+    type: has_one
+    via: rate
+    confidence: high
+  - from: Payment
+    to: Amount
+    type: has_many
+    via: 'amount, counterValue, feePaymentAmount'
+    confidence: high
+  - from: Wallet
+    to: TradeReconciliation
+    type: has_many
+    via: 'sourceWalletId, deliveryWalletId'
+    confidence: high
+  - from: TradeReconciliation
+    to: Rate
+    type: has_one
+    via: rate
+    confidence: high
+  - from: Quote
+    to: Trade
+    type: precedes
+    via: quote reference passed to 'POST /trades'
+    confidence: medium
+    note: >-
+      The spec exposes POST /quotes and POST /trades with a shared quoteRef scalar, but does not
+      declare the field that carries the quote into the trade request in a way that can be read
+      without an example.
+  - from: FixedForwardQuote
+    to: FixedForwardTrade
+    type: precedes
+    via: quoteId
+    confidence: high
+  - from: Wallet
+    to: FixedForwardTrade
+    type: has_many
+    via: 'sourceAccountId, deliveryAccountId'
+    confidence: medium
+    note: >-
+      Named ...AccountId rather than ...WalletId; inferred to target Wallet because those are the
+      only accounts the API can address.
+  - from: Wallet
+    to: FinancialMovement
+    type: has_many
+    via: 'walletId query parameter on GET /financialMovements'
+    confidence: medium
+    note: >-
+      The movement body itself carries only account NUMBERS, not a wallet id, so the join exists at
+      the query layer but not in the payload.
+  - from: Webhook
+    to: webhookFailedNotification
+    type: has_many
+    via: 'GET /webhooks/{webhookId}/failed-notifications'
+    confidence: high
+  - from: Webhook
+    to: Payment
+    type: notifies
+    via: 'PAYMENT_* events'
+    confidence: high
+  - from: Webhook
+    to: Trade
+    type: notifies
+    via: 'TRADE_* events'
+    confidence: high
+  - from: Document
+    to: any
+    type: attaches_to
+    via: 'PUT /documents/upload/{object}/{objectId}/{typeOfDocumentation}'
+    confidence: medium
+    note: The set of valid {object} values is not enumerated in the spec.
+  - from: Wallet
+    to: Holder
+    type: has_one
+    via: holder
+    confidence: high
+  - from: Wallet
+    to: HolderBank
+    type: has_one
+    via: holderBank
+    confidence: high
+  - from: Wallet
+    to: CorrespondantBank
+    type: has_one
+    via: correspondentBank
+    confidence: high
+    note: >-
+      The schema is spelled CorrespondantBank while the field is spelled correspondentBank - a
+      spelling inconsistency preserved verbatim from the spec.
+  - from: ExternalBankAccount
+    to: Holder
+    type: has_one
+    via: holder
+    confidence: high
+
+value_types:
+  - ID
+  - quoteRef
+  - webhookId
+  - Amount
+  - Balance
+  - QuotedDecimal
+  - Currency
+  - CurrencyPair
+  - Date
+  - Datetime
+  - DatetimeFractionnal
+  - Address
+  - Holder
+  - HolderBank
+  - CorrespondantBank
+  - Email
+  - events
+  - url
+  - paymentSpeedOption
+  - paymentPriorityOption
+  - ProcessResult
+  - UserInformation
+  - notificationContent
+  - Error
+  - ErrorVOP
+
+id_scheme:
+  prefixed: false
+  note: >-
+    All ids share one `ID` scalar with no type prefix, so an id gives no clue what kind of object
+    it points at. Two entities break the `id` naming convention outright (fixedForwardId, quoteId,
+    webhookId).
+
+counts:
+  schemas_declared: 42
+  entities: 16
+  value_types: 25
+  relationships: 19
+  operations: 38
+
+gaps:
+  - PaymentOption is an untyped `object` - its shape is undocumented.
+  - FinancialMovement joins to accounts by account NUMBER, not by id.
+  - No id prefixes; a bare id is untyped.
+  - Two naming schemes for the same wallet relationship (sourceWalletId vs sourceAccountId).
+  - 'Trade and TradeReconciliation share the same description text; DatetimeFractionnal and CorrespondantBank are misspelled in the contract.'

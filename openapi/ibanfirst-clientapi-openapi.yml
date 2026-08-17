@@ -1,0 +1,3362 @@
+openapi: 3.0.0
+info:
+  version: 1.6.0
+  title: iBanFirst API
+  description: >-
+    iBanFirst API for cross-border payments, FX trades, account management,
+    beneficiaries, and webhooks.
+
+
+    **Try it out in Postman:** [View Postman
+    Collection](https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api?action=share&creator=44872188)
+
+
+    ---
+
+
+    ## Authentication — X-WSSE
+
+
+    Every request must include an `X-WSSE` header. Plain HTTP calls will fail.
+    The token is **stateless and expires after ~5 minutes**, so it must be
+    computed fresh for each request.
+
+
+    ### Header format
+
+
+    ```
+
+    X-WSSE: UsernameToken Username="<username>", PasswordDigest="<digest>",
+    Nonce="<nonce_b64>", Created="<timestamp>"
+
+    ```
+
+
+    ### Fields
+
+
+    | Field | Description |
+
+    |---|---|
+
+    | `Username` | The username assigned during onboarding. |
+
+    | `Nonce` | A Base64-encoded random hex string (≥ 32 hex characters). |
+
+    | `Created` | Current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. |
+
+    | `PasswordDigest` | `Base64( SHA-1( nonce_bytes ∥ created_bytes ∥
+    secret_bytes ) )` — SHA-1 **binary** digest, then Base64. |
+
+
+    ### Algorithm (step-by-step)
+
+
+    1. Generate a random nonce: at least 32 lowercase hexadecimal characters
+    (e.g. `d36e3162829ed4c89851497a717f0001`).
+
+    2. Get the current UTC timestamp as an ISO-8601 string (e.g.
+    `2026-05-12T10:30:00Z`).
+
+    3. Encode the nonce string as UTF-8 bytes, the timestamp as UTF-8 bytes, and
+    the API secret as UTF-8 bytes.
+
+    4. Compute `SHA-1( nonce_bytes + created_bytes + secret_bytes )`. The hash
+    **must** be the raw binary digest (not hex).
+
+    5. `PasswordDigest` = `Base64( sha1_binary_digest )`
+
+    6. `Nonce` = `Base64( nonce_utf8_bytes )`
+
+
+    ### Code samples
+
+
+    **Python**
+
+    ```python
+
+    import base64, hashlib, os, binascii
+
+    from datetime import datetime, timezone
+
+
+    def generate_xwsse(username: str, secret: str) -> str:
+        nonce = binascii.b2a_hex(os.urandom(16))          # 32 hex bytes
+        created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        digest = base64.b64encode(
+            hashlib.sha1(nonce + created.encode() + secret.encode()).digest()
+        ).decode()
+        nonce_b64 = base64.b64encode(nonce).decode()
+        return f'UsernameToken Username="{username}", PasswordDigest="{digest}", Nonce="{nonce_b64}", Created="{created}"'
+    ```
+
+
+    **JavaScript (Node.js)**
+
+    ```javascript
+
+    const crypto = require('crypto');
+
+    function generateXWSSE(username, secret) {
+        const nonce = crypto.randomBytes(16);
+        const created = new Date().toISOString();
+        const digest = crypto.createHash('sha1')
+            .update(nonce)
+            .update(Buffer.from(created))
+            .update(Buffer.from(secret))
+            .digest('base64');
+        return `UsernameToken Username="${username}", PasswordDigest="${digest}", Nonce="${nonce.toString('base64')}", Created="${created}"`;
+    }
+
+    ```
+
+
+    **PHP**
+
+    ```php
+
+    function generateXWSSE(string $username, string $secret): string {
+        $nonce = bin2hex(random_bytes(16));          // 32 hex chars
+        $created = gmdate('Y-m-d\TH:i:s\Z');
+        $digest = base64_encode(sha1($nonce . $created . $secret, true));
+        return sprintf('UsernameToken Username="%s", PasswordDigest="%s", Nonce="%s", Created="%s"',
+            $username, $digest, base64_encode($nonce), $created);
+    }
+
+    ```
+
+
+    ### Environments
+
+
+    | Environment | Base URL |
+
+    |---|---|
+
+    | Demo (testing) | `https://api-demo.ibanfirst.com/api` |
+
+    | Live (production) | `https://api.ibanfirst.com/api` |
+
+
+    ### Forbidden characters in input fields
+
+
+    The following characters are rejected in route parameters, query parameters,
+    and JSON bodies: `&` `<` `>` `%` `?` `\` `/` `|`
+security:
+  - X-WSSE: []
+tags:
+  - name: Accounts
+    description: >-
+      Each of your accounts has its own specific currency and IBAN. The API
+      allows you to get details and balances about each account in real time. 
+
+       **Note :** ***accounts*** are also labelled as ***wallets*** in the iBanFirst API.
+  - name: Financial movements
+    description: |
+      The API allows you to retrieve all financial movements from your accounts.
+  - name: Beneficiaries
+    description: >-
+      A beneficiary can be either your own account in another bank or a third
+      party recipient account. Beneficiaries can be created or deleted through
+      the API.
+
+
+      **Note :** ***beneficiaries*** are also labelled as
+      ***externalBankAccounts*** in the iBanFirst API.
+  - name: Payments
+    description: >
+      Sending funds from one of your iBanFirst accounts to your own external
+      bank account or a third-party recipient involves two steps:
+
+
+      1. Generate the payment object with the 'Create payment' method.  
+
+      A unique id is assigned to each payment.  
+
+
+      2. Use the 'Confirm Payment' method to send the payment for processing. 
+
+      When you confirm a payment, make sure you have sufficient funds in your
+      account balance. 
+
+
+      **Caution:** Payments are automatically rolled to the next closest working
+      days if not confirmed in the scheduled date of operation. If the balance
+      of your account is not sufficient to cover the payment amount, funds may
+      be locked-in by iBanFirst.
+  - name: Spot trades
+    description: >
+      The API provides a deliverable FX facility and deliverable FX liquidity.
+      You will become counterparty to iBanFirst and can market and sell
+      deliverable FX services to corporate and private clients as well as using
+      such services on their behalf.
+
+
+      FX trades are always made between two accounts of a unique counterparty.
+      iBanFirst will automatically debit the source account and credit the
+      delivery account at the date specified in the FX trade instructions. If
+      the delivery date has been scheduled, the delivery is automatically
+      processed in the morning before 00:30 am Paris time. If the delivery date
+      is today (TOD), the funds is available on your account by the next 20mn.
+
+
+      A FX trades also involves an amount, which includes both the numeric
+      amount and the currency in order to define if this amount is the nominal
+      to be bought or sold, for example: '100000.00+GBP'.
+  - name: Fixed forward payment contract
+    description: >-
+      Book a fixed forward payment contracts instantly on iBanFirst without
+      manual intervention.
+
+
+      - Available currency pairs:
+        - **EUR/USD**
+        - **EUR/GBP**
+        - **GBP/USD**
+
+       - Maturities: **up to 6 months**.
+
+       - Transaction limit: **1M EUR** equivalent per transaction.
+
+      Before using fixed forward, you must have:
+       - Credit approval.
+       - Collateral in place.
+       - Accepted the Autonomous Forward disclaimer.
+
+      The `deliveryDate` must satisfy the following conditions:
+       - **Minimum date**: current date + 3 business days.
+       - **Maximum date**: earlier between [current date + 6 months] and maximum maturity date allowed.
+  - name: Documents
+    description: >-
+      The API allows you to access your documents stored on the iBanFirst
+      platform through a one-time access link.
+
+       Documents must be generated on the platform before being available through the API.
+  - name: Webhook subscriptions
+    description: >-
+      **1. WHAT IS A WEBHOOK ?**
+
+       - Webhooks are events based real-time notifications providing updates on transactions and removing the need for periodic polling.
+
+       - Webhook notifications are sent as HTTPS POST requests to a URL of your choice.
+
+      **2. WEBHOOK SUBSCRIPTIONS**
+
+       - Each webhook subscription allows you to receive notifications for one or more event types :
+
+         -  **Outgoing payment :**`PAYMENT_PLANIFIED` `PAYMENT_FINALIZED` `PAYMENT_WAITING_SIGNATURE` `PAYMENT_AWAITING_CONFIRMATION` `PAYMENT_CANCELED` `PAYMENT_BLOCKED` `PAYMENT_WAITING_JUSTIFICATION` `PAYMENT_INCOMING`
+
+         -  **Spot trade** : `TRADE_PLANIFIED` `TRADE_FINALIZED` `TRADE_CANCELED` `TRADE_BLOCKED`
+
+       - You may have up to 10 active subscriptions at the same time.
+
+       **3. IMPLEMENTATION**
+
+       - **Delivery and retries**
+         -  Webhook notifications may not be delivered in order, your implementation should not assume sequential delivery.
+         - If a notification delivery fails (HTTP status code 400 or 500), it will be retried twice, with a 60-second delay between attempts. This results in a maximum of three delivery attempts per event.
+       - **Acknowledgement**
+         - We recommend responding with a HTTP `204` code (No Content) to acknowledge receipt of a notification.
+        - **Whitelisting**
+          - To ensure webhook notifications reach your URL, you may need to whitelist the following IP (production and demo): **51.158.86.1**. 
+
+      **4. SECURITY**
+
+
+      - Each webhook notification includes an HMAC-256 signature in the request
+      header to let you **validate its authenticity**.
+        -  To verify the signature, recontruct the signed message by concatenating the exact timestamp and request raw body as received : `x-ibanfirst-timestamp.{Body}`.
+          - Compute an HMAC-SHA256 hash of this string using the subscription secret key and compare the result with the `x-ibanfirst-signature` provided in the notification header.
+          - You must **reject** the notification if the signatures do not match.
+       -  Recommended best practices :
+          - Always validate the signature before processing any webhook notification.
+          - Webhook notification payloads must be stored on a private server to protect sensitive data.
+
+      **5. WEBHOOK NOTIFICATION CONTENT**
+
+       Notifications contain the relevant object as described in each reconciliation service.
+       - [Get payment details](https://docs.ibanfirst.com/api/clientapi/payments/paths/~1payments~1%7Bid%7D/get)
+       - [Get trade detail](https://docs.ibanfirst.com/api/clientapi/trades/paths/~1trades~1%7Bid%7D/get)
+
+      ```json
+
+      {
+       "event": event_label,
+       "payload": {
+          see get payment details, get trade details
+       },
+      "webhookId": "e35b6e8d-67ef-4973-945d-c3190a60d0aa"
+
+      }
+
+      ```
+paths:
+  /wallets:
+    post:
+      summary: Create account
+      tags:
+        - Accounts
+      description: >
+        This request allows you to submit a new account.
+
+
+        **Caution :** The holder object in the parameters will only be
+        considered if you suscribed to the `Multi account per currency with
+        holder` account option.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currency
+              properties:
+                currency:
+                  $ref: '#/components/schemas/Currency'
+                tag:
+                  type: string
+                  description: |
+                    Custom data.
+                holder:
+                  $ref: '#/components/schemas/Holder'
+        description: |
+          The account to create
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get accounts list
+      tags:
+        - Accounts
+      description: >
+        This service allows you to retrieve the list of all your accounts hold
+        with iBanFirst. The object returned in the array is a simplified version
+        of the account details providing you main information about the
+        account. 
+      parameters:
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            Accounts are sorted by creation date. 
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallets:
+                    type: array
+                    description: List of accounts
+                    items:
+                      type: object
+                      description: |
+                        A shorter version of the account
+                      properties:
+                        id:
+                          $ref: '#/components/schemas/ID'
+                        tag:
+                          type: string
+                          description: |
+                            The custom wording of the account.
+                        currency:
+                          $ref: '#/components/schemas/Currency'
+                        bookingAmount:
+                          $ref: '#/components/schemas/Amount'
+                        valueAmount:
+                          $ref: '#/components/schemas/Amount'
+                        dateLastFinancialMovement:
+                          $ref: '#/components/schemas/Date'
+        '204':
+          description: No account found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /wallets/{id}:
+    get:
+      summary: Get account details
+      tags:
+        - Accounts
+      description: |
+        Retrieve details about a specific account. 
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id identifying your account. 
+
+             **Note :** you may use the **Get account lists** service to get the unique id of your accounts.  
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallet:
+                    $ref: '#/components/schemas/Wallet'
+        '204':
+          description: No account found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /wallets/{id}/balance/{date}:
+    get:
+      summary: Get account balance
+      tags:
+        - Accounts
+      description: >
+        This request allows you to see the details of an account balance at a
+        given date. 
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id identifying your account. 
+
+             Note : you may use the **Get accounts list** service to get the unique id of your accounts.  
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: path
+          description: |
+            The date used to retrieve the account balance.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wallet:
+                    type: object
+                    properties:
+                      id:
+                        $ref: '#/components/schemas/ID'
+                      balance:
+                        $ref: '#/components/schemas/Balance'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /financialMovements:
+    get:
+      summary: Get financial movements
+      tags:
+        - Financial movements
+      description: >
+        Retrieve a list of financial movements that has been received or sent
+        for the last 12 months. 
+      parameters:
+        - name: walletId
+          in: query
+          description: |
+            The unique id of an account.
+          required: false
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: |
+            The starting date to search financial movements on your accounts.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: toDate
+          in: query
+          description: |
+            The ending date to search financial movements on your accounts.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            A code representing the order of rendering objects.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  financialMovements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: '#/components/schemas/ID'
+                        bookingDate:
+                          $ref: '#/components/schemas/Datetime'
+                        walletId:
+                          $ref: '#/components/schemas/ID'
+                        valueDate:
+                          $ref: '#/components/schemas/Date'
+                        amount:
+                          $ref: '#/components/schemas/Amount'
+                        description:
+                          description: Description of the financial movement.
+                          type: string
+                          maxLength: 76
+        '204':
+          description: No financial movements found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /financialMovements/{id}:
+    get:
+      summary: Get financial movement details
+      tags:
+        - Financial movements
+      description: >-
+        Request information on a particular financial movement that has been
+        credited or debited to a wallet.
+
+        The `typeLabel` field may contain these values:
+         - **rejectOperation**: Payment returned by the bank counterparty
+         - **DebitForExchange**: Debit for an FX operation
+         - **DebitForTransfer**: Debit linked to a transfer
+         - **CreditForExchange**: Credit linked to an FX operation
+         - **Immobilize**: Payment registered but not debited on value date
+         - **ExternalCounterpartCredit**: Account credit
+         - **debitForAccountGuaranteeCredit**: Movement related to the deposit for forward exchange transaction
+         - **debitAccountGuarantee**: Movement related to the deposit for forward exchange transaction
+         - **internalGuaranteeTransfer**: Movement related to the deposit for forward exchange transaction
+         - **corrective**: Corrective
+         - **rejectCreditDepositAccount**: Rejection of a flow credited to the account / after liquidation
+         - **returnFund**: Payment returned by the recipient counterparty
+         - **rejectDebit**: Rejection of an automatic debit on iBanFirst account (SDD)
+         - **PrepaidCardDepositAccountDebit**: Initialization of a virtual payment card
+         - **PrepaidCardDepositAccountCredit**: Recredit funds stored on a virtual payment card that expires
+         - **clientFee**: Fees for using iBanFirst accounts
+         - **cancelClientFee**: Commercial gesture
+         - **DirectDebit**: Direct debit on iBanFirst account
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The id referring the financial movement.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  financialMovement:
+                    $ref: '#/components/schemas/FinancialMovement'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /externalBankAccounts:
+    post:
+      summary: Create beneficiary
+      tags:
+        - Beneficiaries
+      description: >
+        By submitting a new beneficiary, you must supply the relevant details in
+        order to execute a payment.
+
+         **Note :** each of your physical IBAN accounts hold with iBanFirst will be automatically created when subscribing with us.
+
+        The **Create beneficiary** service allows to reference external accounts
+        which can be either your own accounts in another bank or a third party
+        account.
+
+
+        Adding a beneficiary has some rules :
+
+
+        * If you have the BIC/SWIFT of the bank, just submit it, and we will
+        recover informations of the bank on our own.
+
+        * If you do not have the BIC/SWIFT of the bank, you have to refer at
+        least its clearing code type, its clearing code and its name.
+
+        * In both cases, if values are not mentionned above, they are not
+        required.
+
+
+        This service include verifications on the format of the account created.
+
+        The API has been made in order to accept local specification of
+        cross-boarder payments.
+
+
+        The API accepts the following formats of external bank accounts :
+
+          - Austrian Bankleitzahl
+          - Australian Bank State Branch
+          - German Bankleitzahl
+          - Canadian Payments Association Payment Routing Number
+          - Spanish Domestic Interbanking Code
+          - Fedwire Routing Number
+          - HEBIC (Hellenic Bank Identification Code)
+          - Bank Code of Hong Kong
+          - Irish National Clearing Code (NSC)
+          - Indian Financial System Code (IFSC)
+          - Italian Domestic Identification Code
+          - New Zealand National Clearing Code
+          - Polish National Clearing Code (KNR)
+          - Portuguese National Clearing Code
+          - Russian Central Bank Identification Code
+          - UK Domestic Sort Code
+          - Swiss Clearing Code
+          - South African National Clearing Code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountNumber
+                - currency
+                - holderBank
+                - holder
+              properties:
+                accountNumber:
+                  type: string
+                  maxLength: 50
+                  description: |
+                    The recipient account number or IBAN.
+                currency:
+                  $ref: '#/components/schemas/Currency'
+                holderBank:
+                  $ref: '#/components/schemas/HolderBank'
+                holder:
+                  $ref: '#/components/schemas/Holder'
+                contactEmail:
+                  $ref: '#/components/schemas/Email'
+                tag:
+                  type: string
+                  maxLength: 50
+                  description: |
+                    Custom Data.
+                correspondentBic:
+                  type: string
+                  maxLength: 50
+                  description: |
+                    The intermediary bank identifier code.
+                verificationOfPayee:
+                  type: boolean
+                  description: >-
+                    `true` to verify the beneficiary's IBAN, name and type. If
+                    the verification fails, the beneficiary will not be created.
+
+                     **Note** : the verification of payee process can take up to 8 seconds.
+        description: the account to post
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalBankAccountVOP'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorVOP'
+    get:
+      summary: Get beneficiaries list
+      tags:
+        - Beneficiaries
+      description: |-
+        Retrieve the list of all beneficiaries referenced with your accounts.
+         
+         **Note :** you may use the **Retrieve beneficiaries** service to get the unique id of your accounts.
+      parameters:
+        - name: sort
+          in: query
+          description: >
+            A code representing the order of rendering external bank accounts
+            with their creation date.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accounts:
+                    type: array
+                    description: |
+                      An array containing a list of beneficairies.
+                    items:
+                      $ref: '#/components/schemas/ExternalBankAccount'
+        '204':
+          description: No externalBankAccounts found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /externalBankAccounts/{id}:
+    get:
+      summary: Get beneficiary details
+      tags:
+        - Beneficiaries
+      description: >
+        This request allows you to see the details related to a specific
+        beneficiary. 
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id of the beneficiary. 
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  account:
+                    $ref: '#/components/schemas/ExternalBankAccount'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete beneficiary
+      tags:
+        - Beneficiaries
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id of the beneficiary to be deleted.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessResult'
+        '204':
+          description: No externalBankAccounts found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /payments/options/{walletId}/{externalBankAccountId}:
+    get:
+      summary: Get payment options
+      tags:
+        - Payments
+      description: >-
+        Before doing any payments, you may use this request to get priority and
+        fee options available for a given account and beneficiary. 
+
+
+        You will also get fee cost for each `priorityPaymentOption` and
+        `feePaymentOption` combinations, and minimal source and target amount
+        for this combination.
+
+         **Note :** you may also use this request to estimate the cost of a payment.
+      parameters:
+        - name: walletId
+          in: path
+          description: |
+            The source account you want to put your payment debit on.
+          required: true
+          schema:
+            type: string
+        - name: externalBankAccountId
+          in: path
+          description: |
+            The beneficiary you want to put your payment credit on.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOption'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /payments:
+    post:
+      summary: Create payment
+      tags:
+        - Payments
+      description: |
+        You can use this request to schedule a new payment.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sourceWalletId
+                - externalBankAccountId
+                - amount
+                - desiredExecutionDate
+                - feeCurrency
+                - feePaymentOption
+                - priorityPaymentOption
+              properties:
+                sourceWalletId:
+                  $ref: '#/components/schemas/ID'
+                externalBankAccountId:
+                  $ref: '#/components/schemas/ID'
+                amount:
+                  $ref: '#/components/schemas/Amount'
+                desiredExecutionDate:
+                  $ref: '#/components/schemas/Date'
+                feeCurrency:
+                  $ref: '#/components/schemas/Currency'
+                feePaymentOption:
+                  description: >
+                    A code representing the charges option to be applied to this
+                    payment.
+                  type: string
+                  enum:
+                    - BEN
+                    - OUR
+                    - SHARE
+                    - SEPA
+                    - DSP
+                    - RTGS
+                priorityPaymentOption:
+                  $ref: '#/components/schemas/paymentSpeedOption'
+                tag:
+                  description: >
+                    A custom reference that you want to link to this payment in
+                    the system. This tag is not communicated to the beneficiary.
+                  type: string
+                  maxLength: 50
+                communication:
+                  description: |
+                    A free format string sent to the beneficiary.
+                  type: string
+                  maxLength: 76
+                verificationOfPayee:
+                  type: boolean
+                  description: >-
+                    `true` to verify the beneficiary's IBAN, name and type. If
+                    the verification fails, the payment will not be created.
+
+                     **Note** : the verification of payee process can take up to 8 seconds.
+        description: |
+          The payment to post
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/PaymentVOP'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorVOP'
+  /payments/{id}/confirm:
+    put:
+      summary: Confirm a payment
+      tags:
+        - Payments
+      description: >
+        Payments that has been scheduled must be confirmed in order to be
+        released.
+
+        If the payment is not confirmed before the end of scheduled date of
+        operation, it will be automatically postponed to the next operation date
+        available.
+
+
+        ***NOTE**: For an instant SEPA payment confirmation, if the source
+        account does not have sufficient funds, the payment will be
+        automatically rejected..*
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id identifying the payment you want to confirm.
+
+             
+
+             **Note :** you may use the **[Get payments by status](https://docs.ibanfirst.com/api/clientapi/payments/paths/~1payments~1%7Bstatus%7D/get)** service to get the unique id of your payment. 
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /payments/{id}/proofOfTransaction:
+    put:
+      summary: Upload a proof of transaction for a payment
+      tags:
+        - Payments
+      description: >
+        We may ask you to provide a proof of transaction under specific terms.
+        You can anticipate our request and send us your invoice or the ID of the
+        beneficiary to avoid any request from us and fully automate your payment
+        process.
+
+        To send a file with this request, you have to extract the content of the
+        file with a binary format, and encode it with a base64 algorithm to put
+        in in the “file” field.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id of the payment you want to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - documentType
+                - tag
+                - file
+              properties:
+                documentType:
+                  description: |
+                    The type of document to submit for a transaction. 
+                  type: string
+                  enum:
+                    - invoice
+                    - identity
+                tag:
+                  description: |
+                    The name of the document to be attached.
+                  type: string
+                file:
+                  description: >
+                    The binary content of the file, encoded with a base64
+                    algorithm.
+                  type: string
+        description: |
+          The proof of transaction to upload
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /payments/{status}:
+    get:
+      summary: Get payments by status
+      tags:
+        - Payments
+      description: |
+        Request a list of payments filtered by status.
+      parameters:
+        - name: status
+          in: path
+          description: |
+            A code representing the status of the payments you want to get.
+          required: true
+          schema:
+            type: string
+            enum:
+              - all
+              - planified
+              - rejected
+              - finalized
+              - canceled
+              - refused
+              - blocked
+              - waitingconfirmation
+              - waitingsignature
+        - name: fromDate
+          in: query
+          description: |
+            The starting date to search for payments.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: toDate
+          in: query
+          description: |
+            The ending date to search for payments.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            A code representing the order of rendering objects.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+        '204':
+          description: No payments found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /payments/{id}:
+    get:
+      summary: Get payment details
+      tags:
+        - Payments
+      description: |
+        Retrieve the details of a specific payment.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique id of the payment.
+
+             **Note :** you may use the **Get payments by status** service to get the unique id of your payment .
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment:
+                    $ref: '#/components/schemas/Payment'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete a payment
+      tags:
+        - Payments
+      description: |
+        Allows you to delete a scheduled payment.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The code identifying the payment you want to delete.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /quotes:
+    post:
+      summary: Ask for a spot quote
+      tags:
+        - Spot trades
+      description: Read-only service to ask for a real-time quote.
+      requestBody:
+        $ref: '#/components/requestBodies/Quote'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades:
+    post:
+      summary: ' Create spot trade'
+      tags:
+        - Spot trades
+      description: >
+        This service allows you to execute spot trades on the real-time Forex
+        market. The delivery date must be within the next two business days.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currencyPair
+                - side
+                - amount
+                - deliveryDate
+              properties:
+                currencyPair:
+                  $ref: '#/components/schemas/CurrencyPair'
+                side:
+                  description: >
+                    The side repressenting the trade. `S` to sell and `B` to
+                    buy.
+                  type: string
+                  enum:
+                    - B
+                    - S
+                amount:
+                  $ref: '#/components/schemas/Amount'
+                deliveryDate:
+                  $ref: '#/components/schemas/Date'
+                sourceWalletId:
+                  $ref: '#/components/schemas/ID'
+                deliveryWalletId:
+                  $ref: '#/components/schemas/ID'
+                tag:
+                  type: string
+                  maxLength: 76
+                  description: |
+                    A custom wording for the trade.
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trade'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades/_{status}:
+    get:
+      summary: Get trades by status
+      tags:
+        - Spot trades
+      description: |
+        Retrieve the list of executed spot trades filtered by status.
+      parameters:
+        - name: status
+          in: path
+          description: |
+            A code representing the status of the spot trades you want to get.
+          required: true
+          schema:
+            type: string
+            enum:
+              - all
+              - planified
+              - rejected
+              - finalized
+              - canceled
+              - refused
+              - blocked
+        - name: fromDate
+          in: query
+          description: |
+            The starting date to search for spot trades.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: toDate
+          in: query
+          description: |
+            The ending date to search for spot trades.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            A code representing the order of rendering objects.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trades:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TradeReconciliation'
+        '204':
+          description: No spot trades found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades/{id}:
+    get:
+      summary: Get trade details
+      tags:
+        - Spot trades
+      description: |
+        Retrieve the details of a specific trade.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The code identifying the trade you want.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trade:
+                    $ref: '#/components/schemas/TradeReconciliation'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /fixed-forwards/quote:
+    post:
+      summary: |
+        Ask for a fixed forward payment contract quote
+      tags:
+        - Fixed forward payment contract
+      description: >
+        This service allows you to ask for a fixed forward quote.
+
+
+        The quote remains valid for **12 seconds** and can be used to book a
+        fixed forward payment contract with the **Create fixed forward**
+        service.
+
+
+        The **delivery date** must fall between **D+3** and the earlier of **D+6
+        months and the maximum authorized maturity date**.
+      requestBody:
+        $ref: '#/components/requestBodies/Quote'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quote:
+                    $ref: '#/components/schemas/FixedForwardQuote'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /fixed-forwards:
+    post:
+      summary: Create fixed forward
+      tags:
+        - Fixed forward payment contract
+      description: >
+        This service allows you to book a fixed forward payment contract on the
+        real-time Forex market.
+
+
+        You must use a quote obtained with the **Ask for a fixed forward payment
+        contract quote** service.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quoteId
+                - sourceAccountId
+                - deliveryAccountId
+              properties:
+                quoteId:
+                  $ref: '#/components/schemas/quoteRef'
+                sourceAccountId:
+                  $ref: '#/components/schemas/ID'
+                deliveryAccountId:
+                  $ref: '#/components/schemas/ID'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fixedForward:
+                    $ref: '#/components/schemas/FixedForwardTrade'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get fixed forwards by status
+      tags:
+        - Fixed forward payment contract
+      description: >
+        Retrieve the list of booked and executed fixed forward payment contract
+        filtered by status.
+      parameters:
+        - name: status
+          in: query
+          description: |
+            A code representing the status of the trades you want to get.
+          schema:
+            type: string
+            enum:
+              - all
+              - planified
+              - finalized
+              - canceled
+            default: all
+        - name: fromDate
+          in: query
+          description: |
+            The starting date to search for fixed forward payment contract.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: toDate
+          in: query
+          description: |
+            The ending date to search for fixed forward payment contract.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            A code representing the order of rendering objects.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fixedForwards:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FixedForwardTrade'
+                  page:
+                    type: integer
+                    description: Index of the page.
+                  pageSize:
+                    type: integer
+                    description: Number of items returned per page.
+                  total:
+                    type: integer
+                    description: Number of items available.
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /fixed-forwards/{fixedForwardId}:
+    get:
+      summary: Get fixed forward details
+      tags:
+        - Fixed forward payment contract
+      description: |
+        Retrieve the details of a fixed forward.
+      parameters:
+        - name: fixedForwardId
+          in: path
+          description: >
+            The code identifying the fixed forward payment contract you want to
+            retrieve.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fixedForward:
+                    $ref: '#/components/schemas/FixedForwardTrade'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents:
+    get:
+      summary: Get documents list
+      tags:
+        - Documents
+      description: >
+        This service allows you to retrieve the list of documents available for
+        you on the iBanFirst platform.
+      parameters:
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/ID'
+                    name:
+                      description: |
+                        The name of the document.
+                      type: string
+                    type:
+                      description: |
+                        The type of document.
+                      type: string
+                    createdDate:
+                      $ref: '#/components/schemas/Datetime'
+                    link:
+                      description: |
+                        The one-time link to the document.
+                      type: string
+        '204':
+          description: No documents found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/{id}:
+    get:
+      summary: Get document details
+      tags:
+        - Documents
+      description: |
+        Retrieve details for a specific document.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The unique identifier of the document you want.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/RIB:
+    get:
+      summary: Get RIB
+      tags:
+        - Documents
+      description: Retrieve RIB for a specific account.
+      parameters:
+        - name: walletId
+          in: query
+          description: |
+            The account ID for which the RIB is requested.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /documents/upload/{object}/{objectId}/{typeOfDocumentation}:
+    put:
+      summary: Upload a document
+      tags:
+        - Documents
+      description: >
+        This service allows you to upload documents.
+
+         For an `externalBankAccount` object type (*beneficiary*), you may only upload an `identity` type of document.
+
+        For a `payment` object type, you may upload either a `identity` or
+        `invoice` type of document.
+
+
+        To send a file, you have to extract its content in a binary format,
+        encode it with a base64 algorithm and insert the result in the `file`
+        field of the body request.
+      parameters:
+        - name: object
+          in: path
+          description: |
+            The type of object you want to upload a document on.
+          required: true
+          schema:
+            type: string
+            enum:
+              - externalBankAccount
+              - payment
+        - name: objectId
+          in: path
+          description: >
+            The unique identifier of the object you want to upload a document
+            on.
+          required: true
+          schema:
+            type: string
+        - name: typeOfDocumentation
+          in: path
+          description: |
+            The type document you want to upload on your object.
+          required: true
+          schema:
+            type: string
+            enum:
+              - identity
+              - invoice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tag
+                - file
+              properties:
+                tag:
+                  description: |
+                    The name of the document to be attached.
+                  type: string
+                file:
+                  description: >
+                    The binary content of the file, encoded with a base64
+                    algorithm.
+                  type: string
+        description: |
+          The document to upload
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks:
+    post:
+      summary: Create webhook subscription
+      tags:
+        - Webhook subscriptions
+      description: |-
+        You can subscribe to one or more events.
+
+         **Note :** Please save the issued secret as it cannot be retrieved again.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - events
+                - url
+              properties:
+                events:
+                  $ref: '#/components/schemas/events'
+                url:
+                  $ref: '#/components/schemas/url'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  secret:
+                    type: string
+                    pattern: ^[A-Za-z0-9]{32,64}$
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get webhook subscriptions list
+      tags:
+        - Webhook subscriptions
+      description: |
+        Retrieve the list of your webhook subscriptions.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array containing a list of your webhooks and details.
+                items:
+                  $ref: '#/components/schemas/Webhook'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}:
+    get:
+      summary: Get webhook subscription details
+      tags:
+        - Webhook subscriptions
+      description: |
+        Retrieve the details of a specific webhook subscription.
+      parameters:
+        - name: webhookId
+          in: path
+          description: |
+            The ID of the webhook subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      summary: Update webhook subscription
+      tags:
+        - Webhook subscriptions
+      description: >-
+        You can update the list of subscribed events and/or the url
+        notifications are sent to.
+      parameters:
+        - name: webhookId
+          in: path
+          description: |
+            The ID of the webhook subscription you want to update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events:
+                  $ref: '#/components/schemas/events'
+                url:
+                  $ref: '#/components/schemas/url'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Cancel webhook subscription
+      tags:
+        - Webhook subscriptions
+      description: Cancel a webhook subscription to stop receiving notifications.
+      parameters:
+        - name: webhookId
+          in: path
+          description: |
+            The ID of the webhook subscription you want to cancel.
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: OK
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}/rotate-secret:
+    post:
+      summary: Rotate secret
+      tags:
+        - Webhook subscriptions
+      description: |
+        Ask for a new secret for a specific webhook subscription.
+      parameters:
+        - name: webhookId
+          in: path
+          description: |
+            The ID of the webhook subscription.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  secret:
+                    type: string
+                    pattern: ^[A-Za-z0-9]{32,64}$
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}/failed-notifications:
+    get:
+      summary: Get failed notifications
+      tags:
+        - Webhook subscriptions
+      description: |-
+        Retrieve the list of failed notifications for a given subscription.
+
+         
+      parameters:
+        - name: webhookId
+          in: path
+          description: |
+            The ID of the webhook subscription.
+          required: true
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: |
+            The starting date to search for failed notifications.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: toDate
+          in: query
+          description: |
+            The ending date to search for failed notifications.
+          required: false
+          schema:
+            type: string
+            format: YYYY-MM-DD
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: Number of items returned per page.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            Notifications are sorted by creation date. 
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+            default: DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failedNotifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/webhookFailedNotification'
+                  totalCount:
+                    description: Total count of failed notifications
+                    type: string
+                    example: '10'
+                  page:
+                    description: |
+                      Index of the page.
+                    type: string
+                    example: '1'
+                  perPage:
+                    description: |
+                      Number of items returned per page.
+                    type: string
+                    example: '50'
+                  totalPages:
+                    description: |
+                      Number of pages.
+                    type: string
+                    example: '10'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /logs:
+    get:
+      summary: Get logs list
+      tags:
+        - Logs
+      description: >-
+        The iBanFirst API provides a log feed for every request sent allowing
+        you to know exactly the result on our platform.
+
+         This service uses the login sent in your header as a filter to get logs about this user's actions.
+      parameters:
+        - name: page
+          in: query
+          description: |
+            Index of the page.
+          required: false
+          schema:
+            type: string
+            default: '1'
+        - name: per_page
+          in: query
+          description: |
+            Number of items returned.
+          required: false
+          schema:
+            type: string
+            default: '50'
+        - name: sort
+          in: query
+          description: |
+            A code representing the order of rendering objects.
+          required: false
+          schema:
+            type: string
+            enum:
+              - ASC
+              - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Log'
+        '204':
+          description: No logs found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /logs/{nonce}:
+    get:
+      summary: Get log details
+      tags:
+        - Logs
+      description: >
+        In case of somewhat happens during the request, this service API allows
+        you to retrieve a log entry by its nonce.  
+      parameters:
+        - name: nonce
+          in: path
+          description: >
+            The nonce used to authenticate the request. As the one in the
+            header, this nonce has to be Base64 encoded. The nonce you get with
+            `GET /logs` is already encoded.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Log'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+servers:
+  - url: https://api-demo.ibanfirst.com/api
+components:
+  requestBodies:
+    Quote:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - currencyPair
+              - side
+              - amount
+              - deliveryDate
+            properties:
+              currencyPair:
+                $ref: '#/components/schemas/CurrencyPair'
+              side:
+                description: |
+                  The side representing the quote. `S` to sell and `B` to buy.
+                type: string
+                enum:
+                  - B
+                  - S
+              amount:
+                $ref: '#/components/schemas/Amount'
+              deliveryDate:
+                $ref: '#/components/schemas/Date'
+      required: true
+  securitySchemes:
+    X-WSSE:
+      type: apiKey
+      in: header
+      name: X-WSSE
+      description: >-
+        X-WSSE token-based authentication. The header value must be computed
+        fresh for every request (tokens expire in ~5 minutes).
+
+
+        Header value format:
+
+        ```
+
+        UsernameToken Username="<username>", PasswordDigest="<digest>",
+        Nonce="<nonce_b64>", Created="<timestamp>"
+
+        ```
+
+
+        Algorithm:
+
+        1. Generate a random nonce: ≥ 32 lowercase hex characters.
+
+        2. Get current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`.
+
+        3. Compute `PasswordDigest = Base64( SHA-1( nonce_bytes + created_bytes
+        + secret_bytes ) )` — SHA-1 over the raw UTF-8 bytes concatenated in
+        that order, result must be the binary digest before Base64 encoding.
+
+        4. Compute `Nonce = Base64( nonce_utf8_bytes )`.
+
+
+        See the `info.description` field at the top of this spec for full code
+        samples in Python, JavaScript, PHP, Java, and Go.
+  schemas:
+    ExternalBankAccount:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          description: |
+            The three-digit code specifying the currency of the account.
+          type: string
+        tag:
+          type: string
+          maxLength: 50
+          description: |
+            Custom reference of the account.
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: >
+            The code specifying the account (can be either an Iban or an account
+            number).
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+    ExternalBankAccountVOP:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
+          type: string
+          maxLength: 50
+          description: |
+            Custom reference of the account.
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: >
+            The code specifying the account (can be either an Iban or an account
+            number).
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+        payeeVerification:
+          type: object
+          description: |
+            Verification of payee result. 
+
+             **Note** : check default error response if the verification failed for more details.
+          properties:
+            status:
+              type: string
+              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
+            message:
+              type: string
+              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
+    Wallet:
+      type: object
+      description: |
+        Representation of a Wallet
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
+          type: string
+          maxLength: 50
+          description: >
+            Custom reference associated to this wallet. (For internal use only,
+            not communicated to any beneficiary).
+        status:
+          type: string
+          description: |
+            The code identifying the status of the account.
+          enum:
+            - authorized
+            - locked
+            - not authorized
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: |
+            Iban or account number.
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+    Address:
+      type: object
+      description: |
+        Representation of an address
+      required:
+        - country
+      properties:
+        street:
+          type: string
+          maxLength: 255
+          description: |
+            The street and street number for the address described.
+          nullable: true
+        postCode:
+          type: string
+          maxLength: 15
+          description: |
+            The ZIP/Post code for the address described.
+          nullable: true
+        city:
+          type: string
+          maxLength: 35
+          description: |
+            The city for the address described.
+          nullable: true
+        province:
+          type: string
+          maxLength: 2
+          description: >
+            The province code for the address described. This field could be
+            required if the country use a province system, like United States or
+            Canada. To see a full list of province code, please refer to
+            http://www.mapability.com/ei8ic/contest/states.php.
+          nullable: true
+        country:
+          type: string
+          maxLength: 8
+          description: >
+            The two-letters abbreviation for the country, following the ISO-3166
+            for the address described.
+    Amount:
+      type: object
+      description: |
+        Representation of an amount.
+      required:
+        - value
+        - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
+      nullable: true
+    Balance:
+      type: object
+      description: |
+        Representation of a balance.
+      properties:
+        closingDate:
+          $ref: '#/components/schemas/Date'
+        bookingAmount:
+          $ref: '#/components/schemas/Amount'
+        valueAmount:
+          $ref: '#/components/schemas/Amount'
+    HolderBank:
+      type: object
+      description: |
+        Representation of a beneficiary bank.
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: >-
+            Eight or eleven-digit ISO 9362 Business Identifier Code specifying
+            the Recipient Bank.
+
+            This field is optional only when the account number does not have an
+            Iban format.
+        clearingCodeType:
+          type: string
+          maxLength: 2
+          description: |-
+            The two-digit code specifying the local clearing network.
+            If you does not have a bic, this field is required.
+        clearingCode:
+          type: string
+          maxLength: 15
+          description: >-
+            The code identifying the branch number on the local clearing
+            network.
+
+            If you does not have a bic, this field is required.
+        name:
+          type: string
+          maxLength: 120
+          description: |
+            The beneficiary bank name.
+        address:
+          $ref: '#/components/schemas/Address'
+    Holder:
+      type: object
+      description: >
+        What we call a Holder can be either an Individual or an Organisation
+        that own the account.
+
+        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+
+
+        In the beneficiary address, only the Country is mandatory, but you can
+        specify all fields to be more precise.
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: |
+            The name of the account owner.
+        type:
+          type: string
+          maxLength: 10
+          description: |
+            The code identifying the type of account owner.
+          enum:
+            - Individual
+            - Corporate
+        address:
+          $ref: '#/components/schemas/Address'
+    CorrespondantBank:
+      type: object
+      description: |
+        Representation of a correspondant bank.
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: >
+            Eight or eleven-digit ISO 9362 Business Identifier Code specifying
+            the Recipient Bank.
+        name:
+          type: string
+          maxLength: 120
+          description: |
+            The beneficiary bank name.
+        address:
+          $ref: '#/components/schemas/Address'
+      nullable: true
+    Payment:
+      type: object
+      description: |
+        Representation of a payment.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        status:
+          type: string
+          description: |
+            The code identifying the payment status.
+          enum:
+            - awaitingconfirmation
+            - planified
+            - rejected
+            - finalized
+            - canceled
+            - refused
+            - blocked
+            - waitingsignature
+            - processing
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        desiredExecutionDate:
+          $ref: '#/components/schemas/Date'
+        executionDate:
+          $ref: '#/components/schemas/Date'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        counterValue:
+          $ref: '#/components/schemas/Amount'
+        rate:
+          $ref: '#/components/schemas/Rate'
+        tag:
+          type: string
+          maxLength: 50
+          description: >
+            The custom reference related to the payment. (For internal use only,
+            not communicated to the beneficiary).
+          nullable: true
+        externalBankAccountId:
+          $ref: '#/components/schemas/ID'
+        sourceWalletId:
+          $ref: '#/components/schemas/ID'
+        communication:
+          type: string
+          maxLength: 76
+          description: |
+            The wording of the payment.
+          nullable: true
+        priorityPaymentOption:
+          $ref: '#/components/schemas/paymentPriorityOption'
+        feePaymentOption:
+          type: string
+          description: |
+            The code identifying the charges option for this payment.
+          enum:
+            - BEN
+            - OUR
+            - SHARE
+            - SEPA
+            - DSP
+            - RTGS
+        speedOption:
+          $ref: '#/components/schemas/paymentSpeedOption'
+        feePaymentAmount:
+          $ref: '#/components/schemas/Amount'
+        tracker:
+          type: string
+          description: >-
+            Payment tracker link. For SWIFT payment only. Not available for
+            payments pending confirmation or signature.
+    PaymentVOP:
+      type: object
+      description: |
+        Representation of a payment.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        status:
+          type: string
+          description: |
+            The code identifying the payment status.
+          enum:
+            - planified
+            - rejected
+            - finalized
+            - canceled
+            - refused
+            - blocked
+            - awaitingconfirmation
+            - waitingsignature
+            - processing
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        desiredExecutionDate:
+          $ref: '#/components/schemas/Date'
+        executionDate:
+          $ref: '#/components/schemas/Date'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        counterValue:
+          $ref: '#/components/schemas/Amount'
+        rate:
+          $ref: '#/components/schemas/Rate'
+        tag:
+          type: string
+          maxLength: 50
+          description: >
+            The custom reference related to the payment. (For internal use only,
+            not communicated to the beneficiary).
+        externalBankAccountId:
+          $ref: '#/components/schemas/ID'
+        sourceWalletId:
+          $ref: '#/components/schemas/ID'
+        communication:
+          type: string
+          maxLength: 50
+          description: |
+            The wording of the payment.
+        priorityPaymentOption:
+          $ref: '#/components/schemas/paymentPriorityOption'
+        feePaymentOption:
+          type: string
+          description: |
+            The code identifying the charges option for this payment.
+          enum:
+            - BEN
+            - OUR
+            - SHARE
+            - SEPA
+            - DSP
+            - RTGS
+        speedOption:
+          $ref: '#/components/schemas/paymentSpeedOption'
+        feePaymentAmount:
+          $ref: '#/components/schemas/Amount'
+        tracker:
+          type: string
+          description: >-
+            Payment tracker link. For SWIFT payment only. Not available for
+            payments pending confirmation or signature. 
+        payeeVerification:
+          type: object
+          description: |
+            Verification of payee result. 
+
+             **Note** : check default error response if the verification failed for more details.
+          properties:
+            status:
+              type: string
+              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
+            message:
+              type: string
+              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
+    PaymentOption:
+      type: object
+      description: >
+        The representation of a payment option object. This object contains
+        information about priorityPaymentOption and feePaymentOption for a
+        payment.
+      properties:
+        paymentOption:
+          type: object
+          properties:
+            externalBankAccountId:
+              $ref: '#/components/schemas/ID'
+            sourceWalletId:
+              $ref: '#/components/schemas/ID'
+            options:
+              description: >
+                An array containing all priorityPaymentOptions for the payment,
+                and then, all the feePaymentOptions for this
+                priorityPaymentOptions
+              type: array
+              items:
+                type: object
+                properties:
+                  priorityPaymentOption:
+                    $ref: '#/components/schemas/paymentSpeedOption'
+                  feePaymentOption:
+                    description: The fee option
+                    type: string
+                    enum:
+                      - BEN
+                      - OUR
+                      - SHARE
+                      - SEPA
+                      - DSP
+                      - RTGS
+                  priorityCost:
+                    $ref: '#/components/schemas/Amount'
+                  feeCost:
+                    $ref: '#/components/schemas/Amount'
+                  minimumAmountSource:
+                    $ref: '#/components/schemas/Amount'
+                  minimumAmountTarget:
+                    $ref: '#/components/schemas/Amount'
+    Trade:
+      type: object
+      description: |
+        Representation of a Trade.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+        tag:
+          type: string
+          maxLength: 76
+          description: |
+            A custom wording for the trade.
+    TradeReconciliation:
+      type: object
+      description: |
+        Representation of a Trade.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        status:
+          type: string
+          description: |
+            The code identifying the payment status.
+          enum:
+            - planified
+            - rejected
+            - finalized
+            - canceled
+            - refused
+            - blocked
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        side:
+          description: |
+            The side representing the quote. `S` to sell and `B` to buy.
+          type: string
+          enum:
+            - B
+            - S
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        sourceWalletId:
+          $ref: '#/components/schemas/ID'
+        deliveryWalletId:
+          $ref: '#/components/schemas/ID'
+        accountSourceNumber:
+          type: string
+          maxLength: 40
+          description: |
+            Iban or account number.
+        accountTargetNumber:
+          type: string
+          maxLength: 40
+          description: |
+            Iban or account number.
+        rate:
+          $ref: '#/components/schemas/Rate'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+    FinancialMovement:
+      type: object
+      description: |
+        Representation of a financial movement
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        bookingDate:
+          $ref: '#/components/schemas/Date'
+        valueDate:
+          $ref: '#/components/schemas/Date'
+        orderingAccountNumber:
+          type: string
+          maxLength: 40
+          description: |
+            The number referring the ordering account of the transfer.
+        orderingCustomer:
+          type: string
+          description: >
+            A free formatted String representing the ordering customer with it's
+            name and it's address.
+        orderingInstitution:
+          type: string
+          description: >
+            A free formatted String representing the ordering institution with
+            it's name and it's address.
+        orderingAmount:
+          $ref: '#/components/schemas/Amount'
+        beneficiaryAccountNumber:
+          type: string
+          maxLength: 40
+          description: |
+            The number referring the beneficiary account.
+        beneficiaryCustomer:
+          type: string
+          description: >
+            A free formatted String representing the beneficiary customer with
+            it's name and it's address.
+        beneficiaryInstitution:
+          type: string
+          description: >
+            A free formatted String representing the beneficiary institution
+            with it's name and it's address.
+        beneficiaryAmount:
+          $ref: '#/components/schemas/Amount'
+        remittanceInformation:
+          type: string
+          description: |
+            The communication field.
+        chargesDetails:
+          type: string
+          description: |
+            The charges details related to the transfer.
+        exchangeRate:
+          type: number
+          format: float
+          description: |
+            The exchange rate applied on the transfer.
+        typeLabel:
+          type: string
+          description: |
+            The type of the financial movement.
+        internalReference:
+          type: string
+          description: |
+            Internal Reference of the financial movement.
+        description:
+          type: string
+          description: |
+            Description of the financial movement.
+    Rate:
+      type: object
+      description: |
+        Representation of a Rate.
+      properties:
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        midMarket:
+          $ref: '#/components/schemas/QuotedDecimal'
+        date:
+          $ref: '#/components/schemas/Datetime'
+        coreAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        coreBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+    Quote:
+      type: object
+      description: |
+        Representation of a quote.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+    FixedForwardQuote:
+      type: object
+      description: |
+        Representation of a quote.
+      properties:
+        quoteId:
+          $ref: '#/components/schemas/quoteRef'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        expiresAt:
+          $ref: '#/components/schemas/DatetimeFractionnal'
+    FixedForwardTrade:
+      type: object
+      description: |
+        Representation of a fixed forward payment contract.
+      properties:
+        fixedForwardId:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+        status:
+          description: The status of the fixed forward payment contract.
+          type: string
+          enum:
+            - planified
+            - finalized
+            - canceled
+        side:
+          type: string
+          description: The side representing the quote. `S` to sell and `B` to buy.
+          enum:
+            - B
+            - S
+        sourceAccountId:
+          $ref: '#/components/schemas/ID'
+        deliveryAccountId:
+          $ref: '#/components/schemas/ID'
+    Log:
+      type: object
+      description: |
+        Representation of a log.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        createdAt:
+          $ref: '#/components/schemas/Datetime'
+        closedAt:
+          $ref: '#/components/schemas/Datetime'
+        tokenNonce:
+          type: string
+          description: |
+            The nonce used in the HTTP header to authenticate the request.
+        remoteAddress:
+          type: string
+          maxLength: 15
+          description: |
+            The IP address of the request's emiter.
+        requestMethod:
+          type: string
+          maxLength: 6
+          description: |
+            The HTTP method of the request
+        uriRequested:
+          type: string
+          description: |
+            The Universal Resource Identifier given for this request.
+        parametersGiven:
+          type: string
+          description: |
+            The optional parameters *(e.g. after the ?)* given for this request.
+        requestBody:
+          type: string
+          description: |
+            The HTTP request body.
+        httpResponseCode:
+          type: number
+          format: int
+          description: |
+            The HTTP response code.
+        responseBody:
+          type: string
+          description: |
+            The text sent by the server as a result for the request.
+        restErrorTypeId:
+          type: number
+          format: integer
+          description: >
+            If there is an error during the processing the request, this id
+            could be used to find this error.
+        login:
+          type: string
+          description: |
+            The login used for the request.
+        legalname:
+          type: string
+          description: |
+            The legal name of the client used for the request.
+    ProcessResult:
+      type: object
+      description: >
+        As some of our process just need to send you back the confirmation that
+        this process is successful, the API will send you a ProcessResult.
+      properties:
+        result:
+          type: boolean
+          description: >
+            The result of the operation. `true` if the operation is successful,
+            else `false`
+    Error:
+      type: object
+      description: |
+        Representation of an error.
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: |
+            The code referring the error.
+        errorType:
+          type: string
+          description: >
+            A short description identifying a general category for the error
+            that occurred.
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: >
+            An hyperlink to access the page that describes more accurately the
+            error.
+    ErrorVOP:
+      type: object
+      description: |
+        Representation of an error.
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: |
+            The code referring the error.
+        errorType:
+          type: string
+          description: >
+            A short description identifying a general category for the error
+            that occurred.
+        errorMessage:
+          type: string
+          description: 'Error description. '
+        link:
+          type: string
+          description: >
+            An hyperlink to access the page that describes more accurately the
+            error.
+        payeeVerification:
+          type: object
+          description: ''
+          properties:
+            status:
+              type: string
+              enum:
+                - PARTIAL
+                - FAILED
+              description: ''
+            message:
+              type: string
+              description: Verification of payee result details.
+            corrections:
+              type: object
+              description: Proposed modification regarding the beneficiary information.
+              properties:
+                account_holder_name:
+                  type: string
+                  description: Expected beneficiary name.
+                account_holder_type:
+                  type: string
+                  enum:
+                    - Individual
+                    - Corporate
+                  description: Expected beneficiary type.
+    Document:
+      type: object
+      description: |
+        Representation of a document.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        name:
+          description: |
+            The name of the document.
+          type: string
+        type:
+          description: |
+            The type of the document.
+          type: string
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        lastOpennedDate:
+          $ref: '#/components/schemas/Datetime'
+        mimeType:
+          description: |
+            The MIME type of the document.
+          type: string
+        link:
+          description: |
+            The one-time link to access or download the document.
+          type: string
+    Webhook:
+      type: object
+      description: |
+        Representation of a webhook subscription.
+      properties:
+        webhookId:
+          $ref: '#/components/schemas/webhookId'
+        events:
+          description: |
+            List of subscribed events.
+          type: array
+          items:
+            $ref: '#/components/schemas/events'
+        url:
+          $ref: '#/components/schemas/url'
+    UserInformation:
+      type: object
+      description: >
+        Representation of a set of user informations got by the Authentication
+        service.
+      properties:
+        username:
+          type: string
+          description: |
+            The username of the user.
+        pass:
+          type: string
+          description: |
+            The encrypted pass of the user.
+        civility:
+          type: string
+          description: |
+            The civility of the user.
+        firstname:
+          type: string
+          description: |
+            The first name of the user.
+        lastname:
+          type: string
+          description: |
+            The last name of the user.
+        entityname:
+          type: string
+          description: |
+            The the user's company's name.
+        roles:
+          type: array
+          description: |
+            An array describing the roles of the user.
+          items:
+            type: string
+            description: |
+              A string containing the name of the role of the user.
+    webhookFailedNotification:
+      type: object
+      properties:
+        id:
+          description: Unique ID of a notification
+          type: string
+          pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+          example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+        notificationContent:
+          $ref: '#/components/schemas/notificationContent'
+        errorMessage:
+          description: ''
+          type: string
+        httpStatusCode:
+          description: ''
+          type: string
+          example: '404'
+        failedAt:
+          type: string
+          pattern: ''
+          description: ''
+        retryCount:
+          description: ''
+          type: integer
+    notificationContent:
+      type: object
+      properties:
+        payload:
+          description: >-
+            Content of the notification, see get payment details, get trade
+            details
+        eventType:
+          type: string
+          description: Event that triggered the notification.
+        webhookId:
+          $ref: '#/components/schemas/webhookId'
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: >
+        A String representing the id of an object. This string contains
+        alpha-numeric characters, including the capital ones.
+    quoteRef:
+      type: string
+      pattern: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
+      format: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
+      example: ui9230-29830-1773244279236
+      description: |
+        A String representing the unique ID of the quote.
+    webhookId:
+      type: string
+      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+      description: |
+        ID of the webhook subscription.
+    QuotedDecimal:
+      type: string
+      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      example: '2.257'
+      description: |
+        A String representing a formatted floating number.
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: >
+        A String representing the Three-digit ISO 4217 Currency Code of a
+        currency. This String only contains capitalized letters.
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: |
+        A String representing a date by its year, month and day in month.
+            
+    Datetime:
+      type: string
+      pattern: >-
+        ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\
+        ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: >-
+        ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\
+        ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: >
+        A String representing a date by its year, month, day in month, hour,
+        minute and second.
+    DatetimeFractionnal:
+      type: string
+      pattern: >-
+        ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
+      format: >-
+        ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
+      example: '2026-03-11T15:51:31.236943879Z'
+      description: >
+        A string representing a UTC date-time in ISO 8601 format including year,
+        month, day, hour, minute, second, and fractional seconds, terminated
+        with the 'Z' UTC designator.
+    CurrencyPair:
+      type: string
+      pattern: ^[A-Z]{6}$
+      format: ^[A-Z]{6}$
+      example: EURUSD
+      description: >
+        A String representing two concatenated Three-digit ISO 4217 Currency
+        Code of a currency. This String only contains capitalized letters.
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+    events:
+      type: array
+      items:
+        type: string
+        enum:
+          - PAYMENT_CREATED
+          - PAYMENT_PLANIFIED
+          - PAYMENT_FINALIZED
+          - PAYMENT_WAITING_SIGNATURE
+          - PAYMENT_AWAITING_CONFIRMATION
+          - PAYMENT_CANCELED
+          - PAYMENT_BLOCKED
+          - PAYMENT_WAITING_JUSTIFICATION
+          - PAYMENT_INCOMING
+          - TRADE_PLANIFIED
+          - TRADE_FINALIZED
+          - TRADE_CANCELED
+          - TRADE_BLOCKED
+    url:
+      type: string
+      description: |
+        Notifications are sent to this url.
+      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
+      example: https:\www.notification.com
+    Email:
+      type: string
+      description: Beneficiary email address
+      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
+    paymentSpeedOption:
+      description: |
+        A code representing the speed option.
+      type: string
+      enum:
+        - 48H
+        - 24H
+        - 1H
+        - instant
+    paymentPriorityOption:
+      description: >
+        A code representing whether this payment has a standard priority, or a
+        priority treatment.
+      type: string
+      enum:
+        - normal
+        - urgent

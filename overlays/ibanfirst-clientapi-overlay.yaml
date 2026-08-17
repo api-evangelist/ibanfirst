@@ -1,0 +1,117 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the iBanFirst API
+  version: 1.0.0
+extends: openapi/ibanfirst-clientapi-openapi.yml
+x-generated: '2026-08-17'
+x-method: generated
+x-source: >-
+  Derived from the harvested spec at https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml plus the
+  artifacts in this repo. This overlay records API Evangelist annotations only; the harvested spec
+  is never mutated. Nothing here changes the provider's contract semantics - every action either
+  adds an x- extension or adds the production server the provider documents but omits from
+  servers[].
+actions:
+  - target: $.info
+    description: Provenance and companion artifacts.
+    update:
+      x-apievangelist-profile: https://apis.io/provider/ibanfirst/
+      x-apievangelist-source: https://docs.ibanfirst.com/_spec/api/ClientAPI.yaml
+      x-apievangelist-harvested: '2026-08-17'
+      x-apievangelist-artifacts:
+        authentication: authentication/ibanfirst-authentication.yml
+        conventions: conventions/ibanfirst-conventions.yml
+        errors: errors/ibanfirst-problem-types.yml
+        lifecycle: lifecycle/ibanfirst-lifecycle.yml
+        data_model: data-model/ibanfirst-data-model.yml
+        webhooks: asyncapi/ibanfirst-webhooks.yml
+        sandbox: sandbox/ibanfirst-sandbox.yml
+        mcp: mcp/ibanfirst-mcp.yml
+        tool_crosswalk: mcp/ibanfirst-tool-crosswalk.yml
+        conformance: conformance/ibanfirst-conformance.yml
+
+  - target: $.servers
+    description: >-
+      The published spec lists only the demo host. The provider documents the live host at
+      https://docs.ibanfirst.com/api/clientapi/section/environments, so add it - annotated, and
+      after the demo entry, so a generated client still defaults to demo.
+    update:
+      - url: https://api.ibanfirst.com/api
+        description: >-
+          Live (production). Documented by iBanFirst under "Environments" but absent from the
+          published servers[] block.
+        x-apievangelist-added: true
+
+  - target: $.info
+    description: >-
+      Record the conventions this API does NOT implement, so a consumer or agent does not have to
+      re-discover the absences. Each value is a measured finding, not a recommendation.
+    update:
+      x-apievangelist-gaps:
+        operation_ids: >-
+          None of the 38 operations declares an operationId, so no stable, language-neutral handle
+          exists for code generation, Arazzo workflows, or MCP tool binding.
+        idempotency: >-
+          No Idempotency-Key parameter on any write operation; POST /payments, POST /trades and
+          POST /fixed-forwards can duplicate on retry.
+        error_status_codes: >-
+          No 4xx or 5xx status code is enumerated on any operation; all failures bind to a single
+          `default` response.
+        rate_limits: No rate limits documented and no rate-limit response headers.
+        examples: No request or response examples are declared in the spec.
+        problem_details: >-
+          Errors are a proprietary object rather than RFC 9457 application/problem+json.
+        pagination_metadata: >-
+          page / per_page / sort are accepted but responses are bare arrays with no total count and
+          no next/prev links.
+        deprecation: No deprecation policy, no Sunset/Deprecation header support.
+
+  - target: $.components.securitySchemes['X-WSSE']
+    description: Cross-reference the derived authentication profile.
+    update:
+      x-apievangelist-detail: authentication/ibanfirst-authentication.yml
+      x-apievangelist-note: >-
+        WS-Security UsernameToken profile with a SHA-1 binary digest, recomputed per request;
+        tokens live ~5 minutes. Credentials are issued by iBanFirst support per method - there is
+        no scope model and no self-serve key console.
+
+  - target: $.components.schemas.Error
+    description: Cross-reference the error catalog.
+    update:
+      x-apievangelist-detail: errors/ibanfirst-problem-types.yml
+      x-apievangelist-note: >-
+        errorCode values are not published in any public registry; the `link` field is the only
+        route to an explanation.
+
+  - target: $.components.schemas.ErrorVOP
+    description: Flag the verification-of-payee variant as actionable rather than terminal.
+    update:
+      x-apievangelist-note: >-
+        A PARTIAL status carries payeeVerification.corrections with the expected
+        account_holder_name and account_holder_type - resubmit with the correction. FAILED is a
+        stop.
+
+  - target: $.components.schemas.events
+    description: Cross-reference the webhook catalog.
+    update:
+      x-apievangelist-detail: asyncapi/ibanfirst-webhooks.yml
+      x-apievangelist-note: >-
+        13 event types. Deliveries are signed HMAC-SHA256 over
+        "{x-ibanfirst-timestamp}.{raw body}" and retried twice, 60 seconds apart, on HTTP 400/500 -
+        three attempts total. No AsyncAPI document is published.
+
+  - target: $.components.schemas.PaymentOption
+    description: Record that this schema is untyped in the published contract.
+    update:
+      x-apievangelist-gap: >-
+        Declared as a bare `object` with a single untyped `paymentOption` property, so the fee and
+        speed options an integrator needs cannot be read from the contract - only observed at
+        runtime.
+
+  - target: $.components.schemas.Log
+    description: Note the tracing role this resource plays in the absence of a request-id header.
+    update:
+      x-apievangelist-note: >-
+        The API publishes no request-id header. GET /logs/{nonce} retrieves the log entry for a
+        call by its X-WSSE nonce, so clients should persist the nonce they generate for every write
+        - it is the only after-the-fact way to establish whether a request was received.

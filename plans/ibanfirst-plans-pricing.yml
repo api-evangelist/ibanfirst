@@ -1,0 +1,141 @@
+generated: '2026-08-17'
+method: searched
+source: https://info.ibanfirst.com/hubfs/Fees/EN_Fees_brochure_OCT_2025.pdf
+pricing_page: https://ibanfirst.com/fees
+note: >-
+  iBanFirst publishes a real, dated rate card - but not on a web page: ibanfirst.com/fees carries
+  only a link to "Pricing Conditions (applicable from 30/11/2025)" as a PDF brochure. The values
+  below were read from that PDF (HTTP 200, application/pdf, 339 KB). There are NO tiered plans:
+  one fee schedule applies to every client, qualified by an annual FX volume minimum rather than
+  by a subscription tier. Institutional pricing and Luxembourg are explicitly excluded and
+  directed to sales.
+plan_count: 1
+tiered: false
+currency: EUR
+effective_from: '2025-11-30'
+document_version: EN_Fees_brochure_OCT_2025.pdf
+api_pricing:
+  charged: false
+  statement: >-
+    "Connection via EBICS / SWIFTNet or API to your accounting, cash management or ERP software" -
+    "Free, except for special requests"
+  note: >-
+    API access is not a paid add-on and there is no metered API pricing, no request-based billing
+    and no developer tier. The commercial gate on the API is the account relationship, not a
+    subscription: credentials are issued by support to existing customers.
+plans:
+  - name: Standard Pricing Conditions
+    price: 0
+    currency: EUR
+    billing_period: none
+    description: >-
+      No subscription or platform fee. Account opening, maintenance, statements, account history,
+      multi-company group account access and account closure are all free; revenue comes from the
+      FX rate quote and from per-event service fees.
+    qualification:
+      minimum_annual_fx_volume: 200000
+      currency: EUR
+      statement: >-
+        "The rates and fees set out in the Pricing Conditions apply to all clients making a
+        minimum of EUR 200,000 of foreign exchange transactions per year through the iBanFirst
+        platform."
+      penalty: >-
+        "If a client does not meet the minimum volume requirement stipulated above, iBanFirst
+        reserves the right to charge a 0.2% fee on all incoming flows to the various accounts."
+    fx_rate: >-
+      "Based on your annual foreign exchange transaction volumes and following an analysis by one
+      of our foreign exchange experts, you will be offered a personalised foreign exchange rate
+      quote." The FX margin itself is NOT published.
+    included:
+      - Account opening - Free
+      - Account maintenance - Free
+      - Online account statements - Free
+      - Unlimited access to account history - Free
+      - Viewing and managing multi-company group accounts - Free
+      - Account closure - Free
+      - Payments between iBanFirst accounts - Free
+      - SEPA payments - Free
+      - Real-time payment tracking (Payment Tracker), order giver and beneficiaries - Free
+      - Access to bank transfer messages - Free
+      - Transfers and credits received from a third-party account - Free
+      - SEPA direct debit order issued (Core and B2B) - Free
+      - Crediting an iBanFirst account via open banking payment initiation - Free
+      - Orders received for SEPA direct debits (B2B), to bank accounts held by the client - Free
+      - EBICS / SWIFTNet / API connection to accounting, cash management or ERP software - Free
+    fees:
+      - item: Account confirmation letter
+        price: 60
+        currency: EUR
+      - item: US local account management in USD
+        price: 0.3
+        unit: percent of incoming flows
+      - item: PSD payment (non-SEPA EEA)
+        price: 5
+        currency: EUR
+      - item: SWIFT payment (non-euro currencies) - SHARE
+        price: 5
+        currency: EUR
+      - item: SWIFT payment (non-euro currencies) - OUR
+        price: 25
+        currency: EUR
+      - item: SWIFT payment (non-euro currencies) - BEN
+        price: 0
+        currency: EUR
+      - item: Investigation fee
+        price: 20
+        currency: EUR
+      - item: Payment cancellation or amendment
+        price: 20
+        currency: EUR
+      - item: Return of funds
+        price: 20
+        currency: EUR
+      - item: Seizures
+        price: 10
+        unit: percent of amounts seized
+        cap: 100
+        cap_currency: EUR
+      - item: Dormant account fee
+        price: 30
+        currency: EUR
+        billing_period: year
+      - item: Incoming flows for clients below the EUR 200,000 annual FX minimum
+        price: 0.2
+        unit: percent
+    not_available:
+      - Orders received for SEPA direct debits (Core)
+    collateral_schedule:
+      applies_to: deliverable forward payment contracts (module activated on request)
+      note: >-
+        Initial collateral is required when contract maturity exceeds 7 days, credited within 48
+        hours of forward payment validation, and deducted from the final settled amount.
+      tiers:
+        - maturity: '< 7 days'
+          initial_collateral_pct: 0
+        - maturity: '>= 7 days and <= 1 month'
+          initial_collateral_pct: 3
+        - maturity: '> 1 month and <= 6 months'
+          initial_collateral_pct: 5
+        - maturity: '> 6 months and <= 2 years'
+          initial_collateral_pct: 10
+exclusions:
+  - Luxembourg excluded
+  - 'Pricing may differ for institutional clients (contact required)'
+  - Rates shown exclude taxes
+  - >-
+    Exemptions may be agreed with an Account Manager under a specific agreement, so the published
+    card is a default rather than a guarantee.
+gaps:
+  - The FX margin - the primary cost of the service - is not published; it is quoted per client.
+  - Pricing is PDF-only; there is no machine-readable price/catalog endpoint and no HTML rate table.
+  - No self-serve signup and no free/developer tier, so an integrator cannot price or test without a sales conversation.
+x-evidence:
+  fetched: '2026-08-17'
+  probes:
+    - url: https://ibanfirst.com/fees
+      http_status: 200
+      note: links to the PDF; carries no rates itself
+    - url: https://info.ibanfirst.com/hubfs/Fees/EN_Fees_brochure_OCT_2025.pdf
+      http_status: 200
+      content_type: application/pdf
+      bytes: 339113
