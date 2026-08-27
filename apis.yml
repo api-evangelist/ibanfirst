@@ -54,123 +54,440 @@ tags_raw:
   - belgium
   - europe
 apis:
-  - name: iBanFirst API
-    description: >-
-      REST API for automated cross-border payments and currency exchange: manage multi-currency
-      accounts (wallets) and their IBANs, read balances and financial movements, create and delete
-      beneficiaries with payee verification, price and initiate payments (with speed and priority
-      options and proof-of-transaction upload), request spot FX quotes and book spot trades, quote
-      and book fixed forward payment contracts, pull account documents and RIBs, and manage
-      HMAC-signed webhook subscriptions for payment and trade events. Authentication is a
-      per-request X-WSSE UsernameToken digest; credentials are issued by iBanFirst support.
-    humanURL: https://docs.ibanfirst.com/api/clientapi
-    baseURL: https://api.ibanfirst.com/api
-    tags:
-      - Cross-Border Payments
-      - Foreign Exchange
-      - B2B Payments
-      - Treasury
-      - multi-currency-accounts
-      - Swift
-      - SEPA
-      - Webhook
-    tags_raw:
-      - cross-border-payments
-      - foreign-exchange
-      - b2b-payments
-      - treasury
-      - multi-currency-accounts
-      - swift
-      - sepa
-      - webhooks
-    properties:
-      - type: OpenAPI
-        url: openapi/ibanfirst-clientapi-openapi.yml
-      - type: Documentation
-        url: https://docs.ibanfirst.com/
-      - type: APIReference
-        url: https://docs.ibanfirst.com/api/clientapi
-      - type: GettingStarted
-        url: https://docs.ibanfirst.com/guides/quickstart
-      - type: Postman
-        url: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
-      - type: Authentication
-        url: authentication/ibanfirst-authentication.yml
-      - type: Conventions
-        url: conventions/ibanfirst-conventions.yml
-      - type: ErrorCatalog
-        url: errors/ibanfirst-problem-types.yml
-      - type: DataModel
-        url: data-model/ibanfirst-data-model.yml
-      - type: Webhooks
-        url: asyncapi/ibanfirst-webhooks.yml
-      - type: Sandbox
-        url: sandbox/ibanfirst-sandbox.yml
-      - type: Overlay
-        url: overlays/ibanfirst-clientapi-overlay.yaml
-      - type: Glossary
-        url: https://docs.ibanfirst.com/glossary
-  - name: iBanFirst MCP Connector
-    description: >-
-      First-party hosted remote MCP server, launched with API 1.7.0 on 2026-06-05, exposing 16
-      read tools over wallets, balances, financial movements, payments, live FX rates, spot trades,
-      fixed forwards and beneficiaries. Documented as a Claude.ai / Claude Desktop custom
-      connector; authentication is OAuth 2.0 with dynamic client registration (RFC 8414 + RFC 9728
-      metadata served at the endpoint). tools/list is OAuth-gated. No write tools are exposed.
-    humanURL: https://docs.ibanfirst.com/guides/mcp-connector
-    baseURL: https://mcp.ibanfirst.com/mcp
-    tags:
-      - MCP
-      - agent-native
-      - Treasury
-      - Foreign Exchange
-      - Cross-Border Payments
-    tags_raw:
-      - mcp
-      - agent-native
-      - treasury
-      - foreign-exchange
-      - cross-border-payments
-    properties:
-      - type: MCPServer
-        url: mcp/ibanfirst-mcp.yml
-      - type: MCPServer
-        url: https://mcp.ibanfirst.com/mcp
-      - type: ToolCrosswalk
-        url: mcp/ibanfirst-tool-crosswalk.yml
-      - type: Documentation
-        url: https://docs.ibanfirst.com/guides/mcp-connector
-      - type: Authentication
-        url: authentication/ibanfirst-authentication.yml
-  - name: iBanFirst PSD2 XS2A API
-    description: >-
-      PSD2 access-to-account API for registered third-party providers, covering account
-      information services (AIS), payment initiation services (PIS) and strong customer
-      authentication. A sandbox is published for TPP development and testing. Access requires a
-      qualified eIDAS QWAC certificate; onboarding is by request to open-api@ibanfirst.com. The
-      sandbox host terminates anonymous TLS handshakes, so no machine-readable specification for
-      this API could be retrieved without a client certificate.
-    humanURL: https://ibanfirst.com/psd2-api
-    baseURL: https://open-api-sdbx.ibanfirst.com/Banking/API
-    tags:
-      - PSD2
-      - Open Banking
-      - Account Information
-      - Payment Initiation
-      - Regulatory
-    tags_raw:
-      - psd2
-      - open-banking
-      - account-information
-      - payment-initiation
-      - regulatory
-    properties:
-      - type: Documentation
-        url: https://ibanfirst.com/psd2-api
-      - type: Compliance
-        url: https://ibanfirst.com/psd2-api
-      - type: Support
-        url: mailto:open-api@ibanfirst.com
+- name: iBanFirst MCP Connector
+  description: >-
+    First-party hosted remote MCP server, launched with API 1.7.0 on 2026-06-05, exposing 16 read tools
+    over wallets, balances, financial movements, payments, live FX rates, spot trades, fixed forwards
+    and beneficiaries. Documented as a Claude.ai / Claude Desktop custom connector; authentication is
+    OAuth 2.0 with dynamic client registration (RFC 8414 + RFC 9728 metadata served at the endpoint).
+    tools/list is OAuth-gated. No write tools are exposed.
+  humanURL: https://docs.ibanfirst.com/guides/mcp-connector
+  baseURL: https://mcp.ibanfirst.com/mcp
+  tags:
+  - MCP
+  - agent-native
+  - Treasury
+  - Foreign Exchange
+  - Cross-Border Payments
+  tags_raw:
+  - mcp
+  - agent-native
+  - treasury
+  - foreign-exchange
+  - cross-border-payments
+  properties:
+  - type: MCPServer
+    url: mcp/ibanfirst-mcp.yml
+  - type: MCPServer
+    url: https://mcp.ibanfirst.com/mcp
+  - type: ToolCrosswalk
+    url: mcp/ibanfirst-tool-crosswalk.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/guides/mcp-connector
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+- name: iBanFirst PSD2 XS2A API
+  description: >-
+    PSD2 access-to-account API for registered third-party providers, covering account information services
+    (AIS), payment initiation services (PIS) and strong customer authentication. A sandbox is published
+    for TPP development and testing. Access requires a qualified eIDAS QWAC certificate; onboarding is
+    by request to open-api@ibanfirst.com. The sandbox host terminates anonymous TLS handshakes, so no
+    machine-readable specification for this API could be retrieved without a client certificate.
+  humanURL: https://ibanfirst.com/psd2-api
+  baseURL: https://open-api-sdbx.ibanfirst.com/Banking/API
+  tags:
+  - PSD2
+  - Open Banking
+  - Account Information
+  - Payment Initiation
+  - Regulatory
+  tags_raw:
+  - psd2
+  - open-banking
+  - account-information
+  - payment-initiation
+  - regulatory
+  properties:
+  - type: Documentation
+    url: https://ibanfirst.com/psd2-api
+  - type: Compliance
+    url: https://ibanfirst.com/psd2-api
+  - type: Support
+    url: mailto:open-api@ibanfirst.com
+- aid: ibanfirst:ibanfirst-accounts-api
+  name: iBanFirst Accounts API
+  description: "Each of your accounts has its own specific currency and IBAN. The API allows you to get\
+    \ details and balances about each account in real time. \n\n **Note :** ***accounts*** are also labelled\
+    \ as ***wallets*** in the iBanFirst API."
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Accounts
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-accounts-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-beneficiaries-api
+  name: iBanFirst Beneficiaries API
+  description: >-
+    A beneficiary can be either your own account in another bank or a third party recipient account. Beneficiaries
+    can be created or deleted through the API.
+
+
+    **Note :** ***beneficiaries*** are also labelled as ***externalBankAccounts*** in the iBanFirst API.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Beneficiaries
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-beneficiaries-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-documents-api
+  name: iBanFirst Documents API
+  description: >-
+    The API allows you to access your documents stored on the iBanFirst platform through a one-time access
+    link.
+
+     Documents must be generated on the platform before being available through the API.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Documents
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-documents-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-financial-movements-api
+  name: iBanFirst Financial movements API
+  description: The API allows you to retrieve all financial movements from your accounts.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Financial movements
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-financial-movements-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-fixed-forward-payment-contract-api
+  name: iBanFirst Fixed forward payment contract API
+  description: >-
+    Book a fixed forward payment contracts instantly on iBanFirst without manual intervention.
+
+
+    - Available currency pairs:
+      - **EUR/USD**
+      - **EUR/GBP**
+      - **GBP/USD**
+
+     - Maturities: **up to 6 months**.
+
+     - Transaction limit: **1M EUR** equivalent per transaction.
+
+    Before using fixed forward, you must have:
+     - Credit approval.
+     - Collateral in place.
+     - Accepted the Autonomous Forward disclaimer.
+
+    The `deliveryDate` must satisfy the following conditions:
+     - **Minimum date**: current date + 3 business days.
+     - **Maximum date**: earlier between [current date + 6 months] and maximum maturity date allowed.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Fixed forward payment contract
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-logs-api
+  name: iBanFirst Logs API
+  description: The Logs API from iBanFirst — 2 operation(s) for logs.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Logs
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-logs-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-payments-api
+  name: iBanFirst Payments API
+  description: "Sending funds from one of your iBanFirst accounts to your own external bank account or\
+    \ a third-party recipient involves two steps:\n\n1. Generate the payment object with the 'Create payment'\
+    \ method.  \nA unique id is assigned to each payment.  \n\n2. Use the 'Confirm Payment' method to\
+    \ send the payment for processing. \nWhen you confirm a payment, make sure you have sufficient funds\
+    \ in your account balance. \n\n**Caution:** Payments are automatically rolled to the next closest\
+    \ working days if not confirmed in the scheduled date of operation. If the balance of your account\
+    \ is not sufficient to cover the payment amount, funds may be locked-in by iBanFirst."
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Payments
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-payments-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-spot-trades-api
+  name: iBanFirst Spot trades API
+  description: >-
+    The API provides a deliverable FX facility and deliverable FX liquidity. You will become counterparty
+    to iBanFirst and can market and sell deliverable FX services to corporate and private clients as well
+    as using such services on their behalf.
+
+
+    FX trades are always made between two accounts of a unique counterparty. iBanFirst will automatically
+    debit the source account and credit the delivery account at the date specified in the FX trade instructions.
+    If the delivery date has been scheduled, the delivery is automatically processed in the morning before
+    00:30 am Paris time. If the delivery date is today (TOD), the funds is available on your account by
+    the next 20mn.
+
+
+    A FX trades also involves an amount, which includes both the numeric amount and the currency in order
+    to define if this amount is the nominal to be bought or sold, for example: '100000.00+GBP'.
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Spot trades
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-spot-trades-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
+- aid: ibanfirst:ibanfirst-webhook-subscriptions-api
+  name: iBanFirst Webhook subscriptions API
+  description: "**1. WHAT IS A WEBHOOK ?**\n\n - Webhooks are events based real-time notifications providing\
+    \ updates on transactions and removing the need for periodic polling.\n\n - Webhook notifications\
+    \ are sent as HTTPS POST requests to a URL of your choice.\n\n**2. WEBHOOK SUBSCRIPTIONS**\n\n - Each\
+    \ webhook subscription allows you to receive notifications for one or more event types :\n\n   - \
+    \ **Outgoing payment :**`PAYMENT_PLANIFIED` `PAYMENT_FINALIZED` `PAYMENT_WAITING_SIGNATURE` `PAYMENT_AWAITING_CONFIRMATION`\
+    \ `PAYMENT_CANCELED` `PAYMENT_BLOCKED` `PAYMENT_WAITING_JUSTIFICATION` `PAYMENT_INCOMING`\n\n   -\
+    \  **Spot trade** : `TRADE_PLANIFIED` `TRADE_FINALIZED` `TRADE_CANCELED` `TRADE_BLOCKED`\n\n - You\
+    \ may have up to 10 active subscriptions at the same time.\n\n **3. IMPLEMENTATION**\n\n - **Delivery\
+    \ and retries**\n   -  Webhook notifications may not be delivered in order, your implementation should\
+    \ not assume sequential delivery.\n   - If a notification delivery fails (HTTP status code 400 or\
+    \ 500), it will be retried twice, with a 60-second delay between attempts. This results in a maximum\
+    \ of three delivery attempts per event.\n - **Acknowledgement**\n   - We recommend responding with\
+    \ a HTTP `204` code (No Content) to acknowledge receipt of a notification.\n  - **Whitelisting**\n\
+    \    - To ensure webhook notifications reach your URL, you may need to whitelist the following IP\
+    \ (production and demo): **51.158.86.1**. \n\n**4. SECURITY**\n\n- Each webhook notification includes\
+    \ an HMAC-256 signature in the request header to let you **validate its authenticity**.\n  -  To verify\
+    \ the signature, recontruct the signed message by concatenating the exact timestamp and request raw\
+    \ body as received : `x-ibanfirst-timestamp.{Body}`.\n    - Compute an HMAC-SHA256 hash of this string\
+    \ using the subscription secret key and compare the result with the `x-ibanfirst-signature` provided\
+    \ in the notification header.\n    - You must **reject** the notification if the signatures do not\
+    \ match.\n -  Recommended best practices :\n    - Always validate the signature before processing\
+    \ any webhook notification.\n    - Webhook notification payloads must be stored on a private server\
+    \ to protect sensitive data.\n\n**5. WEBHOOK NOTIFICATION CONTENT**\n\n Notifications contain the\
+    \ relevant object as described in each reconciliation service.\n - [Get payment details](https://docs.ibanfirst.com/api/clientapi/payments/paths/~1payments~1%7Bid%7D/get)\n\
+    \ - [Get trade detail](https://docs.ibanfirst.com/api/clientapi/trades/paths/~1trades~1%7Bid%7D/get)\n\
+    \n```json\n{\n \"event\": event_label,\n \"payload\": {\n    see get payment details, get trade details\n\
+    \ },\n\"webhookId\": \"e35b6e8d-67ef-4973-945d-c3190a60d0aa\"\n}\n```"
+  humanURL: https://docs.ibanfirst.com/api/clientapi
+  baseURL: https://api.ibanfirst.com/api
+  tags:
+  - Webhook subscriptions
+  properties:
+  - type: OpenAPI
+    url: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml
+  - type: Documentation
+    url: https://docs.ibanfirst.com/
+  - type: APIReference
+    url: https://docs.ibanfirst.com/api/clientapi
+  - type: GettingStarted
+    url: https://docs.ibanfirst.com/guides/quickstart
+  - type: Postman
+    url: >-
+      https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  - type: Authentication
+    url: authentication/ibanfirst-authentication.yml
+  - type: Conventions
+    url: conventions/ibanfirst-conventions.yml
+  - type: ErrorCatalog
+    url: errors/ibanfirst-problem-types.yml
+  - type: DataModel
+    url: data-model/ibanfirst-data-model.yml
+  - type: Webhooks
+    url: asyncapi/ibanfirst-webhooks.yml
+  - type: Sandbox
+    url: sandbox/ibanfirst-sandbox.yml
+  - type: Glossary
+    url: https://docs.ibanfirst.com/glossary
 common:
   - type: Website
     url: https://www.ibanfirst.com/
