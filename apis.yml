@@ -12,6 +12,18 @@ description: >-
   X-WSSE token authentication, HMAC-SHA256-signed webhooks for payment and trade events, a
   separate eIDAS/QWAC-gated PSD2 XS2A API for AIS and PIS third-party providers, and a hosted
   first-party remote MCP server that gives agents read access to treasury data.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://ibanfirst.com/_next/static/media/iban-og-image.1rlnmbejef6_m.jpg
 url: https://raw.githubusercontent.com/api-evangelist/ibanfirst/refs/heads/main/apis.yml
 x-type: company
