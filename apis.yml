@@ -501,6 +501,9 @@ apis:
   - type: Glossary
     url: https://docs.ibanfirst.com/glossary
 common:
+  - type: CapabilityMap
+    url: capabilities/ibanfirst-capability-edges.yml
+    name: iBanFirst Business Capability Map
   - type: Website
     url: https://www.ibanfirst.com/
   - type: DeveloperPortal

@@ -1,0 +1,74 @@
+slug: ibanfirst
+provider: iBanFirst
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Banking & Capital Markets
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 6
+edges:
+- tag: Webhook subscriptions
+  spec_file: ibanfirst-webhook-subscriptions-api-openapi.yml
+  capability_id: BC-4270.80
+  capability_id_l1: BC-4270
+  capability_name: Webhook & Event Subscription Management
+  confidence: 0.88
+  evidence: POST /webhooks Create webhook subscription; POST /webhooks/{webhookId}/rotate-secret Rotate
+    secret; GET /webhooks/{webhookId}/failed-notifications
+  reason: Purely technical webhook subscription lifecycle plumbing; maps to outbound webhook/event subscription
+    management, not to a payments business capability.
+- tag: Payments
+  spec_file: ibanfirst-payments-api-openapi.yml
+  capability_id: BC-1340.40
+  capability_id_l1: BC-1340
+  capability_name: Cross-Border Payment Management
+  confidence: 0.85
+  evidence: POST /payments "Create payment"; PUT /payments/{id}/confirm "Confirm a payment"; vendor is
+    a "cross-border payment and foreign-exchange platform" with CurrencyPair and Rate schemas
+  reason: Creation, confirmation and tracking of cross-border payment instructions including FX rate and
+    correspondent details.
+- tag: Fixed forward payment contract
+  spec_file: ibanfirst-fixed-forward-payment-contract-api-openapi.yml
+  capability_id: BC-210.40
+  capability_id_l1: BC-210
+  capability_name: Foreign Exchange Management
+  confidence: 0.8
+  evidence: POST /fixed-forwards/quote "Ask for a fixed forward payment contract quote"; schemas FixedForwardTrade,
+    CurrencyPair, Rate
+  reason: Quoting and booking FX forward contracts for corporate clients — foreign exchange exposure/hedging
+    execution.
+- tag: Accounts
+  spec_file: ibanfirst-accounts-api-openapi.yml
+  capability_id: BC-1330.10
+  capability_id_l1: BC-1330
+  capability_name: Deposit Account Management
+  confidence: 0.75
+  evidence: POST /wallets "Create account"; GET /wallets/{id}/balance/{date} "Get account balance"; schemas
+    Wallet, Balance, Holder
+  reason: Creation and servicing of multi-currency currency accounts with balances at a licensed payment
+    institution — deposit/current account management.
+- tag: Spot trades
+  spec_file: ibanfirst-spot-trades-api-openapi.yml
+  capability_id: BC-210.40
+  capability_id_l1: BC-210
+  capability_name: Foreign Exchange Management
+  confidence: 0.75
+  evidence: POST /quotes "Ask for a spot quote"; POST /trades "Create spot trade"; schemas CurrencyPair,
+    Rate, Trade
+  reason: FX spot quoting and trade execution for currency conversion; corporate FX management is the
+    closest fit, with trading order management as an alternative reading.
+- tag: Beneficiaries
+  spec_file: ibanfirst-beneficiaries-api-openapi.yml
+  capability_id: BC-1340.10
+  capability_id_l1: BC-1340
+  capability_name: Payment Initiation Management
+  confidence: 0.7
+  evidence: POST /externalBankAccounts "Create beneficiary"; schemas ExternalBankAccount, ExternalBankAccountVOP
+  reason: Beneficiary (external bank account) registration and verification-of-payee data used to set
+    up and validate outbound payment instructions.
