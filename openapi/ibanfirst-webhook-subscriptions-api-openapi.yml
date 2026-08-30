@@ -1,0 +1,455 @@
+openapi: 3.2.0
+info:
+  version: 1.6.0
+  title: iBanFirst Webhook subscriptions API
+  description: "iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.\n\n**Try it out in Postman:** [View Postman Collection](https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api?action=share&creator=44872188)\n\n---\n\n## Authentication — X-WSSE\n\nEvery request must include an `X-WSSE` header. Plain HTTP calls will fail. The token is **stateless and expires after ~5 minutes**, so it must be computed fresh for each request.\n\n### Header format\n\n```\nX-WSSE: UsernameToken Username=\"<username>\", PasswordDigest=\"<digest>\", Nonce=\"<nonce_b64>\", Created=\"<timestamp>\"\n```\n\n### Fields\n\n| Field | Description |\n|---|---|\n| `Username` | The username assigned during onboarding. |\n| `Nonce` | A Base64-encoded random hex string (≥ 32 hex characters). |\n| `Created` | Current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. |\n| `PasswordDigest` | `Base64( SHA-1( nonce_bytes ∥ created_bytes ∥ secret_bytes ) )` — SHA-1 **binary** digest, then Base64. |\n\n### Algorithm (step-by-step)\n\n1. Generate a random nonce: at least 32 lowercase hexadecimal characters (e.g. `d36e3162829ed4c89851497a717f0001`).\n2. Get the current UTC timestamp as an ISO-8601 string (e.g. `2026-05-12T10:30:00Z`).\n3. Encode the nonce string as UTF-8 bytes, the timestamp as UTF-8 bytes, and the API secret as UTF-8 bytes.\n4. Compute `SHA-1( nonce_bytes + created_bytes + secret_bytes )`. The hash **must** be the raw binary digest (not hex).\n5. `PasswordDigest` = `Base64( sha1_binary_digest )`\n6. `Nonce` = `Base64( nonce_utf8_bytes )`\n\n### Code samples\n\n**Python**\n```python\nimport base64, hashlib, os, binascii\nfrom datetime import datetime, timezone\n\ndef generate_xwsse(username: str, secret: str) -> str:\n    nonce = binascii.b2a_hex(os.urandom(16))          # 32 hex bytes\n    created = datetime.now(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    digest = base64.b64encode(\n        hashlib.sha1(nonce + created.encode() + secret.encode()).digest()\n    ).decode()\n    nonce_b64 = base64.b64encode(nonce).decode()\n    return f'UsernameToken Username=\"{username}\", PasswordDigest=\"{digest}\", Nonce=\"{nonce_b64}\", Created=\"{created}\"'\n```\n\n**JavaScript (Node.js)**\n```javascript\nconst crypto = require('crypto');\nfunction generateXWSSE(username, secret) {\n    const nonce = crypto.randomBytes(16);\n    const created = new Date().toISOString();\n    const digest = crypto.createHash('sha1')\n        .update(nonce)\n        .update(Buffer.from(created))\n        .update(Buffer.from(secret))\n        .digest('base64');\n    return `UsernameToken Username=\"${username}\", PasswordDigest=\"${digest}\", Nonce=\"${nonce.toString('base64')}\", Created=\"${created}\"`;\n}\n```\n\n**PHP**\n```php\nfunction generateXWSSE(string $username, string $secret): string {\n    $nonce = bin2hex(random_bytes(16));          // 32 hex chars\n    $created = gmdate('Y-m-d\\TH:i:s\\Z');\n    $digest = base64_encode(sha1($nonce . $created . $secret, true));\n    return sprintf('UsernameToken Username=\"%s\", PasswordDigest=\"%s\", Nonce=\"%s\", Created=\"%s\"',\n        $username, $digest, base64_encode($nonce), $created);\n}\n```\n\n### Environments\n\n| Environment | Base URL |\n|---|---|\n| Demo (testing) | `https://api-demo.ibanfirst.com/api` |\n| Live (production) | `https://api.ibanfirst.com/api` |\n\n### Forbidden characters in input fields\n\nThe following characters are rejected in route parameters, query parameters, and JSON bodies: `&` `<` `>` `%` `?` `\\` `/` `|`"
+servers:
+- url: https://api-demo.ibanfirst.com/api
+security:
+- X-WSSE: []
+tags:
+- name: Webhook subscriptions
+  description: "**1. WHAT IS A WEBHOOK ?**\n\n - Webhooks are events based real-time notifications providing updates on transactions and removing the need for periodic polling.\n\n - Webhook notifications are sent as HTTPS POST requests to a URL of your choice.\n\n**2. WEBHOOK SUBSCRIPTIONS**\n\n - Each webhook subscription allows you to receive notifications for one or more event types :\n\n   -  **Outgoing payment :**`PAYMENT_PLANIFIED` `PAYMENT_FINALIZED` `PAYMENT_WAITING_SIGNATURE` `PAYMENT_AWAITING_CONFIRMATION` `PAYMENT_CANCELED` `PAYMENT_BLOCKED` `PAYMENT_WAITING_JUSTIFICATION` `PAYMENT_INCOMING`\n\n   -  **Spot trade** : `TRADE_PLANIFIED` `TRADE_FINALIZED` `TRADE_CANCELED` `TRADE_BLOCKED`\n\n - You may have up to 10 active subscriptions at the same time.\n\n **3. IMPLEMENTATION**\n\n - **Delivery and retries**\n   -  Webhook notifications may not be delivered in order, your implementation should not assume sequential delivery.\n   - If a notification delivery fails (HTTP status code 400 or 500), it will be retried twice, with a 60-second delay between attempts. This results in a maximum of three delivery attempts per event.\n - **Acknowledgement**\n   - We recommend responding with a HTTP `204` code (No Content) to acknowledge receipt of a notification.\n  - **Whitelisting**\n    - To ensure webhook notifications reach your URL, you may need to whitelist the following IP (production and demo): **51.158.86.1**. \n\n**4. SECURITY**\n\n- Each webhook notification includes an HMAC-256 signature in the request header to let you **validate its authenticity**.\n  -  To verify the signature, recontruct the signed message by concatenating the exact timestamp and request raw body as received : `x-ibanfirst-timestamp.{Body}`.\n    - Compute an HMAC-SHA256 hash of this string using the subscription secret key and compare the result with the `x-ibanfirst-signature` provided in the notification header.\n    - You must **reject** the notification if the signatures do not match.\n -  Recommended best practices :\n    - Always validate the signature before processing any webhook notification.\n    - Webhook notification payloads must be stored on a private server to protect sensitive data.\n\n**5. WEBHOOK NOTIFICATION CONTENT**\n\n Notifications contain the relevant object as described in each reconciliation service.\n - [Get payment details](https://docs.ibanfirst.com/api/clientapi/payments/paths/~1payments~1%7Bid%7D/get)\n - [Get trade detail](https://docs.ibanfirst.com/api/clientapi/trades/paths/~1trades~1%7Bid%7D/get)\n\n```json\n{\n \"event\": event_label,\n \"payload\": {\n    see get payment details, get trade details\n },\n\"webhookId\": \"e35b6e8d-67ef-4973-945d-c3190a60d0aa\"\n}\n```"
+paths:
+  /webhooks:
+    post:
+      summary: Create webhook subscription
+      tags:
+      - Webhook subscriptions
+      description: "You can subscribe to one or more events.\n\n **Note :** Please save the issued secret as it cannot be retrieved again."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - events
+              - url
+              properties:
+                events:
+                  $ref: '#/components/schemas/events'
+                url:
+                  $ref: '#/components/schemas/url'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  secret:
+                    type: string
+                    pattern: ^[A-Za-z0-9]{32,64}$
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Get webhook subscriptions list
+      tags:
+      - Webhook subscriptions
+      description: 'Retrieve the list of your webhook subscriptions.
+
+        '
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array containing a list of your webhooks and details.
+                items:
+                  $ref: '#/components/schemas/Webhook'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}:
+    get:
+      summary: Get webhook subscription details
+      tags:
+      - Webhook subscriptions
+      description: 'Retrieve the details of a specific webhook subscription.
+
+        '
+      parameters:
+      - name: webhookId
+        in: path
+        description: 'The ID of the webhook subscription.
+
+          '
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      summary: Update webhook subscription
+      tags:
+      - Webhook subscriptions
+      description: You can update the list of subscribed events and/or the url notifications are sent to.
+      parameters:
+      - name: webhookId
+        in: path
+        description: 'The ID of the webhook subscription you want to update.
+
+          '
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events:
+                  $ref: '#/components/schemas/events'
+                url:
+                  $ref: '#/components/schemas/url'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Cancel webhook subscription
+      tags:
+      - Webhook subscriptions
+      description: Cancel a webhook subscription to stop receiving notifications.
+      parameters:
+      - name: webhookId
+        in: path
+        description: 'The ID of the webhook subscription you want to cancel.
+
+          '
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: OK
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}/rotate-secret:
+    post:
+      summary: Rotate secret
+      tags:
+      - Webhook subscriptions
+      description: 'Ask for a new secret for a specific webhook subscription.
+
+        '
+      parameters:
+      - name: webhookId
+        in: path
+        description: 'The ID of the webhook subscription.
+
+          '
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  webhookId:
+                    $ref: '#/components/schemas/webhookId'
+                  events:
+                    $ref: '#/components/schemas/events'
+                  secret:
+                    type: string
+                    pattern: ^[A-Za-z0-9]{32,64}$
+                  url:
+                    $ref: '#/components/schemas/url'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /webhooks/{webhookId}/failed-notifications:
+    get:
+      summary: Get failed notifications
+      tags:
+      - Webhook subscriptions
+      description: "Retrieve the list of failed notifications for a given subscription.\n\n "
+      parameters:
+      - name: webhookId
+        in: path
+        description: 'The ID of the webhook subscription.
+
+          '
+        required: true
+        schema:
+          type: string
+      - name: fromDate
+        in: query
+        description: 'The starting date to search for failed notifications.
+
+          '
+        required: false
+        schema:
+          type: string
+          format: YYYY-MM-DD
+      - name: toDate
+        in: query
+        description: 'The ending date to search for failed notifications.
+
+          '
+        required: false
+        schema:
+          type: string
+          format: YYYY-MM-DD
+      - name: page
+        in: query
+        description: 'Index of the page.
+
+          '
+        required: false
+        schema:
+          type: string
+          default: '1'
+      - name: per_page
+        in: query
+        description: Number of items returned per page.
+        required: false
+        schema:
+          type: string
+          default: '50'
+      - name: sort
+        in: query
+        description: "Notifications are sorted by creation date. \n"
+        required: false
+        schema:
+          type: string
+          enum:
+          - ASC
+          - DESC
+          default: DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  failedNotifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/webhookFailedNotification'
+                  totalCount:
+                    description: Total count of failed notifications
+                    type: string
+                    example: '10'
+                  page:
+                    description: 'Index of the page.
+
+                      '
+                    type: string
+                    example: '1'
+                  perPage:
+                    description: 'Number of items returned per page.
+
+                      '
+                    type: string
+                    example: '50'
+                  totalPages:
+                    description: 'Number of pages.
+
+                      '
+                    type: string
+                    example: '10'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    url:
+      type: string
+      description: 'Notifications are sent to this url.
+
+        '
+      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
+      example: https:\www.notification.com
+    events:
+      type: array
+      items:
+        type: string
+        enum:
+        - PAYMENT_CREATED
+        - PAYMENT_PLANIFIED
+        - PAYMENT_FINALIZED
+        - PAYMENT_WAITING_SIGNATURE
+        - PAYMENT_AWAITING_CONFIRMATION
+        - PAYMENT_CANCELED
+        - PAYMENT_BLOCKED
+        - PAYMENT_WAITING_JUSTIFICATION
+        - PAYMENT_INCOMING
+        - TRADE_PLANIFIED
+        - TRADE_FINALIZED
+        - TRADE_CANCELED
+        - TRADE_BLOCKED
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    webhookId:
+      type: string
+      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+      description: 'ID of the webhook subscription.
+
+        '
+    Webhook:
+      type: object
+      description: 'Representation of a webhook subscription.
+
+        '
+      properties:
+        webhookId:
+          $ref: '#/components/schemas/webhookId'
+        events:
+          description: 'List of subscribed events.
+
+            '
+          type: array
+          items:
+            $ref: '#/components/schemas/events'
+        url:
+          $ref: '#/components/schemas/url'
+    webhookFailedNotification:
+      type: object
+      properties:
+        id:
+          description: Unique ID of a notification
+          type: string
+          pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+          example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+        notificationContent:
+          $ref: '#/components/schemas/notificationContent'
+        errorMessage:
+          description: ''
+          type: string
+        httpStatusCode:
+          description: ''
+          type: string
+          example: '404'
+        failedAt:
+          type: string
+          pattern: ''
+          description: ''
+        retryCount:
+          description: ''
+          type: integer
+    notificationContent:
+      type: object
+      properties:
+        payload:
+          description: Content of the notification, see get payment details, get trade details
+        eventType:
+          type: string
+          description: Event that triggered the notification.
+        webhookId:
+          $ref: '#/components/schemas/webhookId'
+  securitySchemes:
+    X-WSSE:
+      type: apiKey
+      in: header
+      name: X-WSSE
+      description: 'X-WSSE token-based authentication. The header value must be computed fresh for every request (tokens expire in ~5 minutes).
+
+
+        Header value format:
+
+        ```
+
+        UsernameToken Username="<username>", PasswordDigest="<digest>", Nonce="<nonce_b64>", Created="<timestamp>"
+
+        ```
+
+
+        Algorithm:
+
+        1. Generate a random nonce: ≥ 32 lowercase hex characters.
+
+        2. Get current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`.
+
+        3. Compute `PasswordDigest = Base64( SHA-1( nonce_bytes + created_bytes + secret_bytes ) )` — SHA-1 over the raw UTF-8 bytes concatenated in that order, result must be the binary digest before Base64 encoding.
+
+        4. Compute `Nonce = Base64( nonce_utf8_bytes )`.
+
+
+        See the `info.description` field at the top of this spec for full code samples in Python, JavaScript, PHP, Java, and Go.'

@@ -1,0 +1,488 @@
+openapi: 3.2.0
+info:
+  version: 1.6.0
+  title: iBanFirst Spot trades API
+  description: "iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.\n\n**Try it out in Postman:** [View Postman Collection](https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api?action=share&creator=44872188)\n\n---\n\n## Authentication — X-WSSE\n\nEvery request must include an `X-WSSE` header. Plain HTTP calls will fail. The token is **stateless and expires after ~5 minutes**, so it must be computed fresh for each request.\n\n### Header format\n\n```\nX-WSSE: UsernameToken Username=\"<username>\", PasswordDigest=\"<digest>\", Nonce=\"<nonce_b64>\", Created=\"<timestamp>\"\n```\n\n### Fields\n\n| Field | Description |\n|---|---|\n| `Username` | The username assigned during onboarding. |\n| `Nonce` | A Base64-encoded random hex string (≥ 32 hex characters). |\n| `Created` | Current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. |\n| `PasswordDigest` | `Base64( SHA-1( nonce_bytes ∥ created_bytes ∥ secret_bytes ) )` — SHA-1 **binary** digest, then Base64. |\n\n### Algorithm (step-by-step)\n\n1. Generate a random nonce: at least 32 lowercase hexadecimal characters (e.g. `d36e3162829ed4c89851497a717f0001`).\n2. Get the current UTC timestamp as an ISO-8601 string (e.g. `2026-05-12T10:30:00Z`).\n3. Encode the nonce string as UTF-8 bytes, the timestamp as UTF-8 bytes, and the API secret as UTF-8 bytes.\n4. Compute `SHA-1( nonce_bytes + created_bytes + secret_bytes )`. The hash **must** be the raw binary digest (not hex).\n5. `PasswordDigest` = `Base64( sha1_binary_digest )`\n6. `Nonce` = `Base64( nonce_utf8_bytes )`\n\n### Code samples\n\n**Python**\n```python\nimport base64, hashlib, os, binascii\nfrom datetime import datetime, timezone\n\ndef generate_xwsse(username: str, secret: str) -> str:\n    nonce = binascii.b2a_hex(os.urandom(16))          # 32 hex bytes\n    created = datetime.now(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    digest = base64.b64encode(\n        hashlib.sha1(nonce + created.encode() + secret.encode()).digest()\n    ).decode()\n    nonce_b64 = base64.b64encode(nonce).decode()\n    return f'UsernameToken Username=\"{username}\", PasswordDigest=\"{digest}\", Nonce=\"{nonce_b64}\", Created=\"{created}\"'\n```\n\n**JavaScript (Node.js)**\n```javascript\nconst crypto = require('crypto');\nfunction generateXWSSE(username, secret) {\n    const nonce = crypto.randomBytes(16);\n    const created = new Date().toISOString();\n    const digest = crypto.createHash('sha1')\n        .update(nonce)\n        .update(Buffer.from(created))\n        .update(Buffer.from(secret))\n        .digest('base64');\n    return `UsernameToken Username=\"${username}\", PasswordDigest=\"${digest}\", Nonce=\"${nonce.toString('base64')}\", Created=\"${created}\"`;\n}\n```\n\n**PHP**\n```php\nfunction generateXWSSE(string $username, string $secret): string {\n    $nonce = bin2hex(random_bytes(16));          // 32 hex chars\n    $created = gmdate('Y-m-d\\TH:i:s\\Z');\n    $digest = base64_encode(sha1($nonce . $created . $secret, true));\n    return sprintf('UsernameToken Username=\"%s\", PasswordDigest=\"%s\", Nonce=\"%s\", Created=\"%s\"',\n        $username, $digest, base64_encode($nonce), $created);\n}\n```\n\n### Environments\n\n| Environment | Base URL |\n|---|---|\n| Demo (testing) | `https://api-demo.ibanfirst.com/api` |\n| Live (production) | `https://api.ibanfirst.com/api` |\n\n### Forbidden characters in input fields\n\nThe following characters are rejected in route parameters, query parameters, and JSON bodies: `&` `<` `>` `%` `?` `\\` `/` `|`"
+servers:
+- url: https://api-demo.ibanfirst.com/api
+security:
+- X-WSSE: []
+tags:
+- name: Spot trades
+  description: 'The API provides a deliverable FX facility and deliverable FX liquidity. You will become counterparty to iBanFirst and can market and sell deliverable FX services to corporate and private clients as well as using such services on their behalf.
+
+
+    FX trades are always made between two accounts of a unique counterparty. iBanFirst will automatically debit the source account and credit the delivery account at the date specified in the FX trade instructions. If the delivery date has been scheduled, the delivery is automatically processed in the morning before 00:30 am Paris time. If the delivery date is today (TOD), the funds is available on your account by the next 20mn.
+
+
+    A FX trades also involves an amount, which includes both the numeric amount and the currency in order to define if this amount is the nominal to be bought or sold, for example: ''100000.00+GBP''.
+
+    '
+paths:
+  /quotes:
+    post:
+      summary: Ask for a spot quote
+      tags:
+      - Spot trades
+      description: Read-only service to ask for a real-time quote.
+      requestBody:
+        $ref: '#/components/requestBodies/Quote'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Quote'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades:
+    post:
+      summary: ' Create spot trade'
+      tags:
+      - Spot trades
+      description: 'This service allows you to execute spot trades on the real-time Forex market. The delivery date must be within the next two business days.
+
+        '
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - currencyPair
+              - side
+              - amount
+              - deliveryDate
+              properties:
+                currencyPair:
+                  $ref: '#/components/schemas/CurrencyPair'
+                side:
+                  description: 'The side repressenting the trade. `S` to sell and `B` to buy.
+
+                    '
+                  type: string
+                  enum:
+                  - B
+                  - S
+                amount:
+                  $ref: '#/components/schemas/Amount'
+                deliveryDate:
+                  $ref: '#/components/schemas/Date'
+                sourceWalletId:
+                  $ref: '#/components/schemas/ID'
+                deliveryWalletId:
+                  $ref: '#/components/schemas/ID'
+                tag:
+                  type: string
+                  maxLength: 76
+                  description: 'A custom wording for the trade.
+
+                    '
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trade'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades/_{status}:
+    get:
+      summary: Get trades by status
+      tags:
+      - Spot trades
+      description: 'Retrieve the list of executed spot trades filtered by status.
+
+        '
+      parameters:
+      - name: status
+        in: path
+        description: 'A code representing the status of the spot trades you want to get.
+
+          '
+        required: true
+        schema:
+          type: string
+          enum:
+          - all
+          - planified
+          - rejected
+          - finalized
+          - canceled
+          - refused
+          - blocked
+      - name: fromDate
+        in: query
+        description: 'The starting date to search for spot trades.
+
+          '
+        required: false
+        schema:
+          type: string
+          format: YYYY-MM-DD
+      - name: toDate
+        in: query
+        description: 'The ending date to search for spot trades.
+
+          '
+        required: false
+        schema:
+          type: string
+          format: YYYY-MM-DD
+      - name: page
+        in: query
+        description: 'Index of the page.
+
+          '
+        required: false
+        schema:
+          type: string
+          default: '1'
+      - name: per_page
+        in: query
+        description: 'Number of items returned.
+
+          '
+        required: false
+        schema:
+          type: string
+          default: '50'
+      - name: sort
+        in: query
+        description: 'A code representing the order of rendering objects.
+
+          '
+        required: false
+        schema:
+          type: string
+          enum:
+          - ASC
+          - DESC
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trades:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TradeReconciliation'
+        '204':
+          description: No spot trades found
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /trades/{id}:
+    get:
+      summary: Get trade details
+      tags:
+      - Spot trades
+      description: 'Retrieve the details of a specific trade.
+
+        '
+      parameters:
+      - name: id
+        in: path
+        description: 'The code identifying the trade you want.
+
+          '
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trade:
+                    $ref: '#/components/schemas/TradeReconciliation'
+        default:
+          description: ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    QuotedDecimal:
+      type: string
+      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      example: '2.257'
+      description: 'A String representing a formatted floating number.
+
+        '
+    Rate:
+      type: object
+      description: 'Representation of a Rate.
+
+        '
+      properties:
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        midMarket:
+          $ref: '#/components/schemas/QuotedDecimal'
+        date:
+          $ref: '#/components/schemas/Datetime'
+        coreAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        coreBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+    Trade:
+      type: object
+      description: 'Representation of a Trade.
+
+        '
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+        tag:
+          type: string
+          maxLength: 76
+          description: 'A custom wording for the trade.
+
+            '
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    CurrencyPair:
+      type: string
+      pattern: ^[A-Z]{6}$
+      format: ^[A-Z]{6}$
+      example: EURUSD
+      description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+    Quote:
+      type: object
+      description: 'Representation of a quote.
+
+        '
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+
+        '
+    TradeReconciliation:
+      type: object
+      description: 'Representation of a Trade.
+
+        '
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        status:
+          type: string
+          description: 'The code identifying the payment status.
+
+            '
+          enum:
+          - planified
+          - rejected
+          - finalized
+          - canceled
+          - refused
+          - blocked
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        side:
+          description: 'The side representing the quote. `S` to sell and `B` to buy.
+
+            '
+          type: string
+          enum:
+          - B
+          - S
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        sourceWalletId:
+          $ref: '#/components/schemas/ID'
+        deliveryWalletId:
+          $ref: '#/components/schemas/ID'
+        accountSourceNumber:
+          type: string
+          maxLength: 40
+          description: 'Iban or account number.
+
+            '
+        accountTargetNumber:
+          type: string
+          maxLength: 40
+          description: 'Iban or account number.
+
+            '
+        rate:
+          $ref: '#/components/schemas/Rate'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
+
+        '
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
+  requestBodies:
+    Quote:
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - currencyPair
+            - side
+            - amount
+            - deliveryDate
+            properties:
+              currencyPair:
+                $ref: '#/components/schemas/CurrencyPair'
+              side:
+                description: 'The side representing the quote. `S` to sell and `B` to buy.
+
+                  '
+                type: string
+                enum:
+                - B
+                - S
+              amount:
+                $ref: '#/components/schemas/Amount'
+              deliveryDate:
+                $ref: '#/components/schemas/Date'
+      required: true
+  securitySchemes:
+    X-WSSE:
+      type: apiKey
+      in: header
+      name: X-WSSE
+      description: 'X-WSSE token-based authentication. The header value must be computed fresh for every request (tokens expire in ~5 minutes).
+
+
+        Header value format:
+
+        ```
+
+        UsernameToken Username="<username>", PasswordDigest="<digest>", Nonce="<nonce_b64>", Created="<timestamp>"
+
+        ```
+
+
+        Algorithm:
+
+        1. Generate a random nonce: ≥ 32 lowercase hex characters.
+
+        2. Get current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`.
+
+        3. Compute `PasswordDigest = Base64( SHA-1( nonce_bytes + created_bytes + secret_bytes ) )` — SHA-1 over the raw UTF-8 bytes concatenated in that order, result must be the binary digest before Base64 encoding.
+
+        4. Compute `Nonce = Base64( nonce_utf8_bytes )`.
+
+
+        See the `info.description` field at the top of this spec for full code samples in Python, JavaScript, PHP, Java, and Go.'
