@@ -34,20 +34,20 @@ modified: '2026-08-17'
 tags:
   - Company
   - Fintech Insurtech
-  - cross-border-payments
-  - foreign-exchange
-  - b2b-payments
-  - treasury
+  - Cross-Border Payments
+  - Foreign Exchange
+  - B2B Payments
+  - Treasury
   - multi-currency-accounts
-  - swift
-  - sepa
-  - psd2
-  - open-banking
+  - Swift
+  - SEPA
+  - PSD2
+  - Open Banking
   - currency-risk-management
   - Webhook
   - MCP
-  - belgium
-  - europe
+  - Belgium
+  - Europe
 tags_raw:
   - Company
   - Fintech Insurtech
@@ -78,9 +78,9 @@ apis:
   tags:
   - MCP
   - agent-native
-  - treasury
-  - foreign-exchange
-  - cross-border-payments
+  - Treasury
+  - Foreign Exchange
+  - Cross-Border Payments
   tags_raw:
   - mcp
   - agent-native
@@ -108,10 +108,10 @@ apis:
   humanURL: https://ibanfirst.com/psd2-api
   baseURL: https://open-api-sdbx.ibanfirst.com/Banking/API
   tags:
-  - psd2
-  - open-banking
-  - account-information
-  - payment-initiation
+  - PSD2
+  - Open Banking
+  - Account Information
+  - Payment Initiation
   - Regulatory
   tags_raw:
   - psd2
