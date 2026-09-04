@@ -24,6 +24,22 @@ deliveryModel:
   - pricing
   generated: '2026-08-28'
   method: derived
+accessModel:
+  pricing: freemium
+  onboarding: self-serve
+  trial: false
+  try_now: true
+  public: false
+  label: Freemium · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  - rate-limits
+  - security
+  - sandbox
+  generated: '2026-09-02'
+  method: derived
 image: https://ibanfirst.com/_next/static/media/iban-og-image.1rlnmbejef6_m.jpg
 url: https://raw.githubusercontent.com/api-evangelist/ibanfirst/refs/heads/main/apis.yml
 x-type: company
