@@ -1,0 +1,39 @@
+{
+  "provider": "ibanfirst",
+  "sources": [
+    "_original/ibanfirst-clientapi-openapi-original.json"
+  ],
+  "outputs": [
+    "ibanfirst-accounts-api-openapi.yml",
+    "ibanfirst-beneficiaries-api-openapi.yml",
+    "ibanfirst-documents-api-openapi.yml",
+    "ibanfirst-financial-movements-api-openapi.yml",
+    "ibanfirst-fixed-forward-payment-contract-api-openapi.yml",
+    "ibanfirst-logs-api-openapi.yml",
+    "ibanfirst-payments-api-openapi.yml",
+    "ibanfirst-spot-trades-api-openapi.yml",
+    "ibanfirst-webhook-subscriptions-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "1 archived document(s) dropped as subsets of other archived documents",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "ibanfirst-clientapi-openapi-original.json: upgraded openapi 3.0.0 -> OpenAPI 3.2.0",
+    "ibanfirst-clientapi-openapi-original.json: declared missing tag: Logs",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "_original/ibanfirst-clientapi-openapi.yml: archived document superseded by a larger archived document",
+    "ibanfirst-accounts-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-beneficiaries-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-documents-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-financial-movements-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-fixed-forward-payment-contract-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-logs-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-payments-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-spot-trades-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "ibanfirst-webhook-subscriptions-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

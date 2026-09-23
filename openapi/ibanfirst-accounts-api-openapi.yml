@@ -2,14 +2,17 @@ openapi: 3.2.0
 info:
   version: 1.6.0
   title: iBanFirst Accounts API
-  description: "iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.\n\n**Try it out in Postman:** [View Postman Collection](https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api?action=share&creator=44872188)\n\n---\n\n## Authentication — X-WSSE\n\nEvery request must include an `X-WSSE` header. Plain HTTP calls will fail. The token is **stateless and expires after ~5 minutes**, so it must be computed fresh for each request.\n\n### Header format\n\n```\nX-WSSE: UsernameToken Username=\"<username>\", PasswordDigest=\"<digest>\", Nonce=\"<nonce_b64>\", Created=\"<timestamp>\"\n```\n\n### Fields\n\n| Field | Description |\n|---|---|\n| `Username` | The username assigned during onboarding. |\n| `Nonce` | A Base64-encoded random hex string (≥ 32 hex characters). |\n| `Created` | Current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. |\n| `PasswordDigest` | `Base64( SHA-1( nonce_bytes ∥ created_bytes ∥ secret_bytes ) )` — SHA-1 **binary** digest, then Base64. |\n\n### Algorithm (step-by-step)\n\n1. Generate a random nonce: at least 32 lowercase hexadecimal characters (e.g. `d36e3162829ed4c89851497a717f0001`).\n2. Get the current UTC timestamp as an ISO-8601 string (e.g. `2026-05-12T10:30:00Z`).\n3. Encode the nonce string as UTF-8 bytes, the timestamp as UTF-8 bytes, and the API secret as UTF-8 bytes.\n4. Compute `SHA-1( nonce_bytes + created_bytes + secret_bytes )`. The hash **must** be the raw binary digest (not hex).\n5. `PasswordDigest` = `Base64( sha1_binary_digest )`\n6. `Nonce` = `Base64( nonce_utf8_bytes )`\n\n### Code samples\n\n**Python**\n```python\nimport base64, hashlib, os, binascii\nfrom datetime import datetime, timezone\n\ndef generate_xwsse(username: str, secret: str) -> str:\n    nonce = binascii.b2a_hex(os.urandom(16))          # 32 hex bytes\n    created = datetime.now(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    digest = base64.b64encode(\n        hashlib.sha1(nonce + created.encode() + secret.encode()).digest()\n    ).decode()\n    nonce_b64 = base64.b64encode(nonce).decode()\n    return f'UsernameToken Username=\"{username}\", PasswordDigest=\"{digest}\", Nonce=\"{nonce_b64}\", Created=\"{created}\"'\n```\n\n**JavaScript (Node.js)**\n```javascript\nconst crypto = require('crypto');\nfunction generateXWSSE(username, secret) {\n    const nonce = crypto.randomBytes(16);\n    const created = new Date().toISOString();\n    const digest = crypto.createHash('sha1')\n        .update(nonce)\n        .update(Buffer.from(created))\n        .update(Buffer.from(secret))\n        .digest('base64');\n    return `UsernameToken Username=\"${username}\", PasswordDigest=\"${digest}\", Nonce=\"${nonce.toString('base64')}\", Created=\"${created}\"`;\n}\n```\n\n**PHP**\n```php\nfunction generateXWSSE(string $username, string $secret): string {\n    $nonce = bin2hex(random_bytes(16));          // 32 hex chars\n    $created = gmdate('Y-m-d\\TH:i:s\\Z');\n    $digest = base64_encode(sha1($nonce . $created . $secret, true));\n    return sprintf('UsernameToken Username=\"%s\", PasswordDigest=\"%s\", Nonce=\"%s\", Created=\"%s\"',\n        $username, $digest, base64_encode($nonce), $created);\n}\n```\n\n### Environments\n\n| Environment | Base URL |\n|---|---|\n| Demo (testing) | `https://api-demo.ibanfirst.com/api` |\n| Live (production) | `https://api.ibanfirst.com/api` |\n\n### Forbidden characters in input fields\n\nThe following characters are rejected in route parameters, query parameters, and JSON bodies: `&` `<` `>` `%` `?` `\\` `/` `|`"
+  description: iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.
 servers:
 - url: https://api-demo.ibanfirst.com/api
 security:
 - X-WSSE: []
 tags:
 - name: Accounts
-  description: "Each of your accounts has its own specific currency and IBAN. The API allows you to get details and balances about each account in real time. \n\n **Note :** ***accounts*** are also labelled as ***wallets*** in the iBanFirst API."
+  description: 'Each of your accounts has its own specific currency and IBAN. The API allows you to get details and balances about each account in real time.
+
+
+    **Note :** ***accounts*** are also labelled as ***wallets*** in the iBanFirst API.'
 paths:
   /wallets:
     post:
@@ -19,9 +22,7 @@ paths:
       description: 'This request allows you to submit a new account.
 
 
-        **Caution :** The holder object in the parameters will only be considered if you suscribed to the `Multi account per currency with holder` account option.
-
-        '
+        **Caution :** The holder object in the parameters will only be considered if you suscribed to the `Multi account per currency with holder` account option.'
       requestBody:
         content:
           application/json:
@@ -56,11 +57,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: postWallets
+      x-operation-id-source: derived
     get:
       summary: Get accounts list
       tags:
       - Accounts
-      description: "This service allows you to retrieve the list of all your accounts hold with iBanFirst. The object returned in the array is a simplified version of the account details providing you main information about the account. \n"
+      description: This service allows you to retrieve the list of all your accounts hold with iBanFirst. The object returned in the array is a simplified version of the account details providing you main information about the account.
       parameters:
       - name: page
         in: query
@@ -129,12 +132,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: getWallets
+      x-operation-id-source: derived
   /wallets/{id}:
     get:
       summary: Get account details
       tags:
       - Accounts
-      description: "Retrieve details about a specific account. \n"
+      description: Retrieve details about a specific account.
       parameters:
       - name: id
         in: path
@@ -160,12 +165,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: getWalletsById
+      x-operation-id-source: derived
   /wallets/{id}/balance/{date}:
     get:
       summary: Get account balance
       tags:
       - Accounts
-      description: "This request allows you to see the details of an account balance at a given date. \n"
+      description: This request allows you to see the details of an account balance at a given date.
       parameters:
       - name: id
         in: path
@@ -202,36 +209,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: getWalletsByIdBalanceByDate
+      x-operation-id-source: derived
 components:
   schemas:
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
-    Balance:
+    HolderBank:
       type: object
-      description: 'Representation of a balance.
+      description: 'Representation of a beneficiary bank.
 
         '
       properties:
-        closingDate:
-          $ref: '#/components/schemas/Date'
-        bookingAmount:
-          $ref: '#/components/schemas/Amount'
-        valueAmount:
-          $ref: '#/components/schemas/Amount'
-    QuotedDecimal:
-      type: string
-      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      example: '2.257'
-      description: 'A String representing a formatted floating number.
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            This field is optional only when the account number does not have an Iban format.'
+        clearingCodeType:
+          type: string
+          maxLength: 2
+          description: 'The two-digit code specifying the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        clearingCode:
+          type: string
+          maxLength: 15
+          description: 'The code identifying the branch number on the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
+    Holder:
+      type: object
+      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
+
+        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+
+
+        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
 
         '
+      required:
+      - name
+      - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: 'The name of the account owner.
+
+            '
+        type:
+          type: string
+          maxLength: 10
+          description: 'The code identifying the type of account owner.
+
+            '
+          enum:
+          - Individual
+          - Corporate
+        address:
+          $ref: '#/components/schemas/Address'
     Address:
       type: object
       description: 'Representation of an address
@@ -278,38 +322,21 @@ components:
           description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
 
             '
-    HolderBank:
-      type: object
-      description: 'Representation of a beneficiary bank.
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
 
         '
+      required:
+      - value
+      - currency
       properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            This field is optional only when the account number does not have an Iban format.'
-        clearingCodeType:
-          type: string
-          maxLength: 2
-          description: 'The two-digit code specifying the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        clearingCode:
-          type: string
-          maxLength: 15
-          description: 'The code identifying the branch number on the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
     ID:
       type: string
       pattern: ^[A-Za-z0-9]+$
@@ -318,43 +345,18 @@ components:
       description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
 
         '
-    Date:
-      type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
-    Holder:
+    Balance:
       type: object
-      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
-
-        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
-
-
-        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
+      description: 'Representation of a balance.
 
         '
-      required:
-      - name
-      - type
       properties:
-        name:
-          type: string
-          maxLength: 100
-          description: 'The name of the account owner.
-
-            '
-        type:
-          type: string
-          maxLength: 10
-          description: 'The code identifying the type of account owner.
-
-            '
-          enum:
-          - Individual
-          - Corporate
-        address:
-          $ref: '#/components/schemas/Address'
+        closingDate:
+          $ref: '#/components/schemas/Date'
+        bookingAmount:
+          $ref: '#/components/schemas/Amount'
+        valueAmount:
+          $ref: '#/components/schemas/Amount'
     Error:
       type: object
       description: 'Representation of an error.
@@ -380,6 +382,50 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
+    CorrespondantBank:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of a correspondant bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            '
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    QuotedDecimal:
+      type: string
+      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      example: '2.257'
+      description: 'A String representing a formatted floating number.
+
+        '
     Wallet:
       type: object
       description: 'Representation of a Wallet
@@ -417,43 +463,6 @@ components:
           $ref: '#/components/schemas/HolderBank'
         holder:
           $ref: '#/components/schemas/Holder'
-    CorrespondantBank:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of a correspondant bank.
-
-        '
-      properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            '
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
-    Amount:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of an amount.
-
-        '
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currency:
-          $ref: '#/components/schemas/Currency'
   securitySchemes:
     X-WSSE:
       type: apiKey

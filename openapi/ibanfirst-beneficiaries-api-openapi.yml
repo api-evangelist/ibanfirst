@@ -2,7 +2,7 @@ openapi: 3.2.0
 info:
   version: 1.6.0
   title: iBanFirst Beneficiaries API
-  description: "iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.\n\n**Try it out in Postman:** [View Postman Collection](https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api?action=share&creator=44872188)\n\n---\n\n## Authentication — X-WSSE\n\nEvery request must include an `X-WSSE` header. Plain HTTP calls will fail. The token is **stateless and expires after ~5 minutes**, so it must be computed fresh for each request.\n\n### Header format\n\n```\nX-WSSE: UsernameToken Username=\"<username>\", PasswordDigest=\"<digest>\", Nonce=\"<nonce_b64>\", Created=\"<timestamp>\"\n```\n\n### Fields\n\n| Field | Description |\n|---|---|\n| `Username` | The username assigned during onboarding. |\n| `Nonce` | A Base64-encoded random hex string (≥ 32 hex characters). |\n| `Created` | Current UTC timestamp in ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`. |\n| `PasswordDigest` | `Base64( SHA-1( nonce_bytes ∥ created_bytes ∥ secret_bytes ) )` — SHA-1 **binary** digest, then Base64. |\n\n### Algorithm (step-by-step)\n\n1. Generate a random nonce: at least 32 lowercase hexadecimal characters (e.g. `d36e3162829ed4c89851497a717f0001`).\n2. Get the current UTC timestamp as an ISO-8601 string (e.g. `2026-05-12T10:30:00Z`).\n3. Encode the nonce string as UTF-8 bytes, the timestamp as UTF-8 bytes, and the API secret as UTF-8 bytes.\n4. Compute `SHA-1( nonce_bytes + created_bytes + secret_bytes )`. The hash **must** be the raw binary digest (not hex).\n5. `PasswordDigest` = `Base64( sha1_binary_digest )`\n6. `Nonce` = `Base64( nonce_utf8_bytes )`\n\n### Code samples\n\n**Python**\n```python\nimport base64, hashlib, os, binascii\nfrom datetime import datetime, timezone\n\ndef generate_xwsse(username: str, secret: str) -> str:\n    nonce = binascii.b2a_hex(os.urandom(16))          # 32 hex bytes\n    created = datetime.now(timezone.utc).strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n    digest = base64.b64encode(\n        hashlib.sha1(nonce + created.encode() + secret.encode()).digest()\n    ).decode()\n    nonce_b64 = base64.b64encode(nonce).decode()\n    return f'UsernameToken Username=\"{username}\", PasswordDigest=\"{digest}\", Nonce=\"{nonce_b64}\", Created=\"{created}\"'\n```\n\n**JavaScript (Node.js)**\n```javascript\nconst crypto = require('crypto');\nfunction generateXWSSE(username, secret) {\n    const nonce = crypto.randomBytes(16);\n    const created = new Date().toISOString();\n    const digest = crypto.createHash('sha1')\n        .update(nonce)\n        .update(Buffer.from(created))\n        .update(Buffer.from(secret))\n        .digest('base64');\n    return `UsernameToken Username=\"${username}\", PasswordDigest=\"${digest}\", Nonce=\"${nonce.toString('base64')}\", Created=\"${created}\"`;\n}\n```\n\n**PHP**\n```php\nfunction generateXWSSE(string $username, string $secret): string {\n    $nonce = bin2hex(random_bytes(16));          // 32 hex chars\n    $created = gmdate('Y-m-d\\TH:i:s\\Z');\n    $digest = base64_encode(sha1($nonce . $created . $secret, true));\n    return sprintf('UsernameToken Username=\"%s\", PasswordDigest=\"%s\", Nonce=\"%s\", Created=\"%s\"',\n        $username, $digest, base64_encode($nonce), $created);\n}\n```\n\n### Environments\n\n| Environment | Base URL |\n|---|---|\n| Demo (testing) | `https://api-demo.ibanfirst.com/api` |\n| Live (production) | `https://api.ibanfirst.com/api` |\n\n### Forbidden characters in input fields\n\nThe following characters are rejected in route parameters, query parameters, and JSON bodies: `&` `<` `>` `%` `?` `\\` `/` `|`"
+  description: iBanFirst API for cross-border payments, FX trades, account management, beneficiaries, and webhooks.
 servers:
 - url: https://api-demo.ibanfirst.com/api
 security:
@@ -19,7 +19,68 @@ paths:
       summary: Create beneficiary
       tags:
       - Beneficiaries
-      description: "By submitting a new beneficiary, you must supply the relevant details in order to execute a payment.\n\n **Note :** each of your physical IBAN accounts hold with iBanFirst will be automatically created when subscribing with us.\n\nThe **Create beneficiary** service allows to reference external accounts which can be either your own accounts in another bank or a third party account.\n\nAdding a beneficiary has some rules :\n\n* If you have the BIC/SWIFT of the bank, just submit it, and we will recover informations of the bank on our own.\n* If you do not have the BIC/SWIFT of the bank, you have to refer at least its clearing code type, its clearing code and its name.\n* In both cases, if values are not mentionned above, they are not required.\n\nThis service include verifications on the format of the account created.\nThe API has been made in order to accept local specification of cross-boarder payments.\n\nThe API accepts the following formats of external bank accounts :\n\n  - Austrian Bankleitzahl\n  - Australian Bank State Branch\n  - German Bankleitzahl\n  - Canadian Payments Association Payment Routing Number\n  - Spanish Domestic Interbanking Code\n  - Fedwire Routing Number\n  - HEBIC (Hellenic Bank Identification Code)\n  - Bank Code of Hong Kong\n  - Irish National Clearing Code (NSC)\n  - Indian Financial System Code (IFSC)\n  - Italian Domestic Identification Code\n  - New Zealand National Clearing Code\n  - Polish National Clearing Code (KNR)\n  - Portuguese National Clearing Code\n  - Russian Central Bank Identification Code\n  - UK Domestic Sort Code\n  - Swiss Clearing Code\n  - South African National Clearing Code\n"
+      description: 'By submitting a new beneficiary, you must supply the relevant details in order to execute a payment.
+
+
+        **Note :** each of your physical IBAN accounts hold with iBanFirst will be automatically created when subscribing with us.
+
+
+        The **Create beneficiary** service allows to reference external accounts which can be either your own accounts in another bank or a third party account.
+
+
+        Adding a beneficiary has some rules :
+
+
+        * If you have the BIC/SWIFT of the bank, just submit it, and we will recover informations of the bank on our own.
+
+        * If you do not have the BIC/SWIFT of the bank, you have to refer at least its clearing code type, its clearing code and its name.
+
+        * In both cases, if values are not mentionned above, they are not required.
+
+
+        This service include verifications on the format of the account created.
+
+        The API has been made in order to accept local specification of cross-boarder payments.
+
+
+        The API accepts the following formats of external bank accounts :
+
+
+        - Austrian Bankleitzahl
+
+        - Australian Bank State Branch
+
+        - German Bankleitzahl
+
+        - Canadian Payments Association Payment Routing Number
+
+        - Spanish Domestic Interbanking Code
+
+        - Fedwire Routing Number
+
+        - HEBIC (Hellenic Bank Identification Code)
+
+        - Bank Code of Hong Kong
+
+        - Irish National Clearing Code (NSC)
+
+        - Indian Financial System Code (IFSC)
+
+        - Italian Domestic Identification Code
+
+        - New Zealand National Clearing Code
+
+        - Polish National Clearing Code (KNR)
+
+        - Portuguese National Clearing Code
+
+        - Russian Central Bank Identification Code
+
+        - UK Domestic Sort Code
+
+        - Swiss Clearing Code
+
+        - South African National Clearing Code'
       requestBody:
         content:
           application/json:
@@ -75,11 +136,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorVOP'
+      operationId: postExternalBankAccounts
+      x-operation-id-source: derived
     get:
       summary: Get beneficiaries list
       tags:
       - Beneficiaries
-      description: "Retrieve the list of all beneficiaries referenced with your accounts.\n \n **Note :** you may use the **Retrieve beneficiaries** service to get the unique id of your accounts."
+      description: 'Retrieve the list of all beneficiaries referenced with your accounts.
+
+
+        **Note :** you may use the **Retrieve beneficiaries** service to get the unique id of your accounts.'
       parameters:
       - name: sort
         in: query
@@ -133,12 +199,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: getExternalBankAccounts
+      x-operation-id-source: derived
   /externalBankAccounts/{id}:
     get:
       summary: Get beneficiary details
       tags:
       - Beneficiaries
-      description: "This request allows you to see the details related to a specific beneficiary. \n"
+      description: This request allows you to see the details related to a specific beneficiary.
       parameters:
       - name: id
         in: path
@@ -162,6 +230,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: getExternalBankAccountsById
+      x-operation-id-source: derived
     delete:
       summary: Delete beneficiary
       tags:
@@ -190,8 +260,156 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+      operationId: deleteExternalBankAccountsById
+      x-operation-id-source: derived
 components:
   schemas:
+    HolderBank:
+      type: object
+      description: 'Representation of a beneficiary bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            This field is optional only when the account number does not have an Iban format.'
+        clearingCodeType:
+          type: string
+          maxLength: 2
+          description: 'The two-digit code specifying the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        clearingCode:
+          type: string
+          maxLength: 15
+          description: 'The code identifying the branch number on the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
+    Holder:
+      type: object
+      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
+
+        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+
+
+        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
+
+        '
+      required:
+      - name
+      - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: 'The name of the account owner.
+
+            '
+        type:
+          type: string
+          maxLength: 10
+          description: 'The code identifying the type of account owner.
+
+            '
+          enum:
+          - Individual
+          - Corporate
+        address:
+          $ref: '#/components/schemas/Address'
+    Address:
+      type: object
+      description: 'Representation of an address
+
+        '
+      required:
+      - country
+      properties:
+        street:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+          description: 'The street and street number for the address described.
+
+            '
+        postCode:
+          type:
+          - string
+          - 'null'
+          maxLength: 15
+          description: 'The ZIP/Post code for the address described.
+
+            '
+        city:
+          type:
+          - string
+          - 'null'
+          maxLength: 35
+          description: 'The city for the address described.
+
+            '
+        province:
+          type:
+          - string
+          - 'null'
+          maxLength: 2
+          description: 'The province code for the address described. This field could be required if the country use a province system, like United States or Canada. To see a full list of province code, please refer to http://www.mapability.com/ei8ic/contest/states.php.
+
+            '
+        country:
+          type: string
+          maxLength: 8
+          description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
+
+            '
+    ExternalBankAccountVOP:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
+          type: string
+          maxLength: 50
+          description: 'Custom reference of the account.
+
+            '
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: 'The code specifying the account (can be either an Iban or an account number).
+
+            '
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+        payeeVerification:
+          type: object
+          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
+          properties:
+            status:
+              type: string
+              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
+            message:
+              type: string
+              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
     ErrorVOP:
       type: object
       description: 'Representation of an error.
@@ -243,148 +461,6 @@ components:
                   - Individual
                   - Corporate
                   description: Expected beneficiary type.
-    ProcessResult:
-      type: object
-      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
-
-        '
-      properties:
-        result:
-          type: boolean
-          description: 'The result of the operation. `true` if the operation is successful, else `false`
-
-            '
-    ExternalBankAccountVOP:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          $ref: '#/components/schemas/Currency'
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference of the account.
-
-            '
-        accountNumber:
-          type: string
-          maxLength: 40
-          description: 'The code specifying the account (can be either an Iban or an account number).
-
-            '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-        contactEmail:
-          $ref: '#/components/schemas/Email'
-        payeeVerification:
-          type: object
-          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
-          properties:
-            status:
-              type: string
-              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
-            message:
-              type: string
-              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
-    Address:
-      type: object
-      description: 'Representation of an address
-
-        '
-      required:
-      - country
-      properties:
-        street:
-          type:
-          - string
-          - 'null'
-          maxLength: 255
-          description: 'The street and street number for the address described.
-
-            '
-        postCode:
-          type:
-          - string
-          - 'null'
-          maxLength: 15
-          description: 'The ZIP/Post code for the address described.
-
-            '
-        city:
-          type:
-          - string
-          - 'null'
-          maxLength: 35
-          description: 'The city for the address described.
-
-            '
-        province:
-          type:
-          - string
-          - 'null'
-          maxLength: 2
-          description: 'The province code for the address described. This field could be required if the country use a province system, like United States or Canada. To see a full list of province code, please refer to http://www.mapability.com/ei8ic/contest/states.php.
-
-            '
-        country:
-          type: string
-          maxLength: 8
-          description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
-
-            '
-    HolderBank:
-      type: object
-      description: 'Representation of a beneficiary bank.
-
-        '
-      properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            This field is optional only when the account number does not have an Iban format.'
-        clearingCodeType:
-          type: string
-          maxLength: 2
-          description: 'The two-digit code specifying the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        clearingCode:
-          type: string
-          maxLength: 15
-          description: 'The code identifying the branch number on the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
-
-        '
     Error:
       type: object
       description: 'Representation of an error.
@@ -410,6 +486,51 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
+    ProcessResult:
+      type: object
+      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
+
+        '
+      properties:
+        result:
+          type: boolean
+          description: 'The result of the operation. `true` if the operation is successful, else `false`
+
+            '
+    CorrespondantBank:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of a correspondant bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            '
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
+    Email:
+      type: string
+      description: Beneficiary email address
+      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
     ExternalBankAccount:
       type: object
       properties:
@@ -440,63 +561,14 @@ components:
           $ref: '#/components/schemas/Holder'
         contactEmail:
           $ref: '#/components/schemas/Email'
-    Holder:
-      type: object
-      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
-
-        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
-
-
-        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
-
-        '
-      required:
-      - name
-      - type
-      properties:
-        name:
-          type: string
-          maxLength: 100
-          description: 'The name of the account owner.
-
-            '
-        type:
-          type: string
-          maxLength: 10
-          description: 'The code identifying the type of account owner.
-
-            '
-          enum:
-          - Individual
-          - Corporate
-        address:
-          $ref: '#/components/schemas/Address'
-    Email:
+    ID:
       type: string
-      description: Beneficiary email address
-      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
-    CorrespondantBank:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of a correspondant bank.
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
 
         '
-      properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            '
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
   securitySchemes:
     X-WSSE:
       type: apiKey
