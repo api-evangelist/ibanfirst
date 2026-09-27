@@ -264,9 +264,19 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    HolderBank:
-      type: object
-      description: 'Representation of a beneficiary bank.
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    CorrespondantBank:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of a correspondant bank.
 
         '
       properties:
@@ -275,19 +285,7 @@ components:
           maxLength: 11
           description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
 
-            This field is optional only when the account number does not have an Iban format.'
-        clearingCodeType:
-          type: string
-          maxLength: 2
-          description: 'The two-digit code specifying the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        clearingCode:
-          type: string
-          maxLength: 15
-          description: 'The code identifying the branch number on the local clearing network.
-
-            If you does not have a bic, this field is required.'
+            '
         name:
           type: string
           maxLength: 120
@@ -296,37 +294,43 @@ components:
             '
         address:
           $ref: '#/components/schemas/Address'
-    Holder:
+    ExternalBankAccountVOP:
       type: object
-      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
-
-        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
-
-
-        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
-
-        '
-      required:
-      - name
-      - type
       properties:
-        name:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
           type: string
-          maxLength: 100
-          description: 'The name of the account owner.
+          maxLength: 50
+          description: 'Custom reference of the account.
 
             '
-        type:
+        accountNumber:
           type: string
-          maxLength: 10
-          description: 'The code identifying the type of account owner.
+          maxLength: 40
+          description: 'The code specifying the account (can be either an Iban or an account number).
 
             '
-          enum:
-          - Individual
-          - Corporate
-        address:
-          $ref: '#/components/schemas/Address'
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+        payeeVerification:
+          type: object
+          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
+          properties:
+            status:
+              type: string
+              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
+            message:
+              type: string
+              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
     Address:
       type: object
       description: 'Representation of an address
@@ -373,43 +377,6 @@ components:
           description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
 
             '
-    ExternalBankAccountVOP:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          $ref: '#/components/schemas/Currency'
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference of the account.
-
-            '
-        accountNumber:
-          type: string
-          maxLength: 40
-          description: 'The code specifying the account (can be either an Iban or an account number).
-
-            '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-        contactEmail:
-          $ref: '#/components/schemas/Email'
-        payeeVerification:
-          type: object
-          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
-          properties:
-            status:
-              type: string
-              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
-            message:
-              type: string
-              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
     ErrorVOP:
       type: object
       description: 'Representation of an error.
@@ -461,6 +428,38 @@ components:
                   - Individual
                   - Corporate
                   description: Expected beneficiary type.
+    HolderBank:
+      type: object
+      description: 'Representation of a beneficiary bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            This field is optional only when the account number does not have an Iban format.'
+        clearingCodeType:
+          type: string
+          maxLength: 2
+          description: 'The two-digit code specifying the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        clearingCode:
+          type: string
+          maxLength: 15
+          description: 'The code identifying the branch number on the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
     Error:
       type: object
       description: 'Representation of an error.
@@ -486,6 +485,37 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
+    Holder:
+      type: object
+      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
+
+        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+
+
+        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
+
+        '
+      required:
+      - name
+      - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: 'The name of the account owner.
+
+            '
+        type:
+          type: string
+          maxLength: 10
+          description: 'The code identifying the type of account owner.
+
+            '
+          enum:
+          - Individual
+          - Corporate
+        address:
+          $ref: '#/components/schemas/Address'
     ProcessResult:
       type: object
       description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
@@ -497,40 +527,10 @@ components:
           description: 'The result of the operation. `true` if the operation is successful, else `false`
 
             '
-    CorrespondantBank:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of a correspondant bank.
-
-        '
-      properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            '
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
     Email:
       type: string
       description: Beneficiary email address
       pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
     ExternalBankAccount:
       type: object
       properties:

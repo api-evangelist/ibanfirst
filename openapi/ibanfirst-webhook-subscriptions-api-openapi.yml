@@ -327,6 +327,30 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    webhookFailedNotification:
+      type: object
+      properties:
+        id:
+          description: Unique ID of a notification
+          type: string
+          pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+          example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+        notificationContent:
+          $ref: '#/components/schemas/notificationContent'
+        errorMessage:
+          description: ''
+          type: string
+        httpStatusCode:
+          description: ''
+          type: string
+          example: '404'
+        failedAt:
+          type: string
+          pattern: ''
+          description: ''
+        retryCount:
+          description: ''
+          type: integer
     url:
       type: string
       description: 'Notifications are sent to this url.
@@ -334,24 +358,6 @@ components:
         '
       pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
       example: https:\www.notification.com
-    events:
-      type: array
-      items:
-        type: string
-        enum:
-        - PAYMENT_CREATED
-        - PAYMENT_PLANIFIED
-        - PAYMENT_FINALIZED
-        - PAYMENT_WAITING_SIGNATURE
-        - PAYMENT_AWAITING_CONFIRMATION
-        - PAYMENT_CANCELED
-        - PAYMENT_BLOCKED
-        - PAYMENT_WAITING_JUSTIFICATION
-        - PAYMENT_INCOMING
-        - TRADE_PLANIFIED
-        - TRADE_FINALIZED
-        - TRADE_CANCELED
-        - TRADE_BLOCKED
     notificationContent:
       type: object
       properties:
@@ -379,6 +385,13 @@ components:
             $ref: '#/components/schemas/events'
         url:
           $ref: '#/components/schemas/url'
+    webhookId:
+      type: string
+      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+      description: 'ID of the webhook subscription.
+
+        '
     Error:
       type: object
       description: 'Representation of an error.
@@ -404,37 +417,24 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
-    webhookId:
-      type: string
-      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
-      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
-      description: 'ID of the webhook subscription.
-
-        '
-    webhookFailedNotification:
-      type: object
-      properties:
-        id:
-          description: Unique ID of a notification
-          type: string
-          pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
-          example: cf16243d-7e0a-4a5b-b996-ba7018201e30
-        notificationContent:
-          $ref: '#/components/schemas/notificationContent'
-        errorMessage:
-          description: ''
-          type: string
-        httpStatusCode:
-          description: ''
-          type: string
-          example: '404'
-        failedAt:
-          type: string
-          pattern: ''
-          description: ''
-        retryCount:
-          description: ''
-          type: integer
+    events:
+      type: array
+      items:
+        type: string
+        enum:
+        - PAYMENT_CREATED
+        - PAYMENT_PLANIFIED
+        - PAYMENT_FINALIZED
+        - PAYMENT_WAITING_SIGNATURE
+        - PAYMENT_AWAITING_CONFIRMATION
+        - PAYMENT_CANCELED
+        - PAYMENT_BLOCKED
+        - PAYMENT_WAITING_JUSTIFICATION
+        - PAYMENT_INCOMING
+        - TRADE_PLANIFIED
+        - TRADE_FINALIZED
+        - TRADE_CANCELED
+        - TRADE_BLOCKED
   securitySchemes:
     X-WSSE:
       type: apiKey

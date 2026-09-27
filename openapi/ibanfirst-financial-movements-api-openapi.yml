@@ -183,14 +183,28 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Datetime:
+    Currency:
       type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
 
         '
+    QuotedDecimal:
+      type: string
+      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      example: '2.257'
+      description: 'A String representing a formatted floating number.
+
+        '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
     FinancialMovement:
       type: object
       description: 'Representation of a financial movement
@@ -270,21 +284,14 @@ components:
           description: 'Description of the financial movement.
 
             '
-    Amount:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of an amount.
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
 
         '
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currency:
-          $ref: '#/components/schemas/Currency'
     Error:
       type: object
       description: 'Representation of an error.
@@ -310,28 +317,21 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
-    Date:
-      type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
 
         '
-    QuotedDecimal:
-      type: string
-      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      example: '2.257'
-      description: 'A String representing a formatted floating number.
-
-        '
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
     ID:
       type: string
       pattern: ^[A-Za-z0-9]+$
