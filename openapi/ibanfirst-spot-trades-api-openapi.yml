@@ -218,14 +218,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
     QuotedDecimal:
       type: string
       pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
@@ -234,12 +226,72 @@ components:
       description: 'A String representing a formatted floating number.
 
         '
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Trade:
+      type: object
+      description: 'Representation of a Trade.
+
+        '
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
+        tag:
+          type: string
+          maxLength: 76
+          description: 'A custom wording for the trade.
+
+            '
+    Quote:
+      type: object
+      description: 'Representation of a quote.
+
+        '
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        deliveryDate:
+          $ref: '#/components/schemas/Date'
     Date:
       type: string
       pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
       format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
       example: '2016-01-01'
       description: "A String representing a date by its year, month and day in month.\n    \n"
+    CurrencyPair:
+      type: string
+      pattern: ^[A-Z]{6}$
+      format: ^[A-Z]{6}$
+      example: EURUSD
+      description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
     TradeReconciliation:
       type: object
       description: 'Representation of a Trade.
@@ -296,52 +348,6 @@ components:
           $ref: '#/components/schemas/Datetime'
         deliveryDate:
           $ref: '#/components/schemas/Date'
-    Quote:
-      type: object
-      description: 'Representation of a quote.
-
-        '
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        appliedRate:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currencyPair:
-          $ref: '#/components/schemas/CurrencyPair'
-        sourceAmount:
-          $ref: '#/components/schemas/Amount'
-        deliveredAmount:
-          $ref: '#/components/schemas/Amount'
-        createdDate:
-          $ref: '#/components/schemas/Datetime'
-        deliveryDate:
-          $ref: '#/components/schemas/Date'
-    Trade:
-      type: object
-      description: 'Representation of a Trade.
-
-        '
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        appliedRate:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currencyPair:
-          $ref: '#/components/schemas/CurrencyPair'
-        sourceAmount:
-          $ref: '#/components/schemas/Amount'
-        deliveredAmount:
-          $ref: '#/components/schemas/Amount'
-        createdDate:
-          $ref: '#/components/schemas/Datetime'
-        deliveryDate:
-          $ref: '#/components/schemas/Date'
-        tag:
-          type: string
-          maxLength: 76
-          description: 'A custom wording for the trade.
-
-            '
     Datetime:
       type: string
       pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
@@ -365,6 +371,34 @@ components:
           $ref: '#/components/schemas/QuotedDecimal'
         currency:
           $ref: '#/components/schemas/Currency'
+    Rate:
+      type: object
+      description: 'Representation of a Rate.
+
+        '
+      properties:
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        midMarket:
+          $ref: '#/components/schemas/QuotedDecimal'
+        date:
+          $ref: '#/components/schemas/Datetime'
+        coreAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        coreBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedAsk:
+          $ref: '#/components/schemas/QuotedDecimal'
+        appliedBid:
+          $ref: '#/components/schemas/QuotedDecimal'
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
     Error:
       type: object
       description: 'Representation of an error.
@@ -390,40 +424,6 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
-    CurrencyPair:
-      type: string
-      pattern: ^[A-Z]{6}$
-      format: ^[A-Z]{6}$
-      example: EURUSD
-      description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
-    Rate:
-      type: object
-      description: 'Representation of a Rate.
-
-        '
-      properties:
-        currencyPair:
-          $ref: '#/components/schemas/CurrencyPair'
-        midMarket:
-          $ref: '#/components/schemas/QuotedDecimal'
-        date:
-          $ref: '#/components/schemas/Datetime'
-        coreAsk:
-          $ref: '#/components/schemas/QuotedDecimal'
-        coreBid:
-          $ref: '#/components/schemas/QuotedDecimal'
-        appliedAsk:
-          $ref: '#/components/schemas/QuotedDecimal'
-        appliedBid:
-          $ref: '#/components/schemas/QuotedDecimal'
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
-
-        '
   requestBodies:
     Quote:
       content:

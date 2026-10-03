@@ -218,14 +218,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
     QuotedDecimal:
       type: string
       pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
@@ -234,38 +226,20 @@ components:
       description: 'A String representing a formatted floating number.
 
         '
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
     Date:
       type: string
       pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
       format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
       example: '2016-01-01'
       description: "A String representing a date by its year, month and day in month.\n    \n"
-    FixedForwardQuote:
-      type: object
-      description: 'Representation of a quote.
-
-        '
-      properties:
-        quoteId:
-          $ref: '#/components/schemas/quoteRef'
-        currencyPair:
-          $ref: '#/components/schemas/CurrencyPair'
-        sourceAmount:
-          $ref: '#/components/schemas/Amount'
-        deliveredAmount:
-          $ref: '#/components/schemas/Amount'
-        appliedRate:
-          $ref: '#/components/schemas/QuotedDecimal'
-        expiresAt:
-          $ref: '#/components/schemas/DatetimeFractionnal'
-    DatetimeFractionnal:
-      type: string
-      pattern: ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
-      format: ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
-      example: '2026-03-11T15:51:31.236943879Z'
-      description: 'A string representing a UTC date-time in ISO 8601 format including year, month, day, hour, minute, second, and fractional seconds, terminated with the ''Z'' UTC designator.
-
-        '
     FixedForwardTrade:
       type: object
       description: 'Representation of a fixed forward payment contract.
@@ -303,37 +277,6 @@ components:
           $ref: '#/components/schemas/ID'
         deliveryAccountId:
           $ref: '#/components/schemas/ID'
-    Datetime:
-      type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
-
-        '
-    quoteRef:
-      type: string
-      pattern: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
-      format: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
-      example: ui9230-29830-1773244279236
-      description: 'A String representing the unique ID of the quote.
-
-        '
-    Amount:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of an amount.
-
-        '
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currency:
-          $ref: '#/components/schemas/Currency'
     Error:
       type: object
       description: 'Representation of an error.
@@ -365,14 +308,71 @@ components:
       format: ^[A-Z]{6}$
       example: EURUSD
       description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
-    ID:
+    quoteRef:
       type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+      pattern: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
+      format: ^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$
+      example: ui9230-29830-1773244279236
+      description: 'A String representing the unique ID of the quote.
 
         '
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+
+        '
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
+
+        '
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    DatetimeFractionnal:
+      type: string
+      pattern: ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
+      format: ^((19[0-9]{2}|2[0-9]{3})\-(0[1-9]|1[0-2])\-([0-2][0-9]|3[01])T([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9])\.[0-9]{1,9}Z)$
+      example: '2026-03-11T15:51:31.236943879Z'
+      description: 'A string representing a UTC date-time in ISO 8601 format including year, month, day, hour, minute, second, and fractional seconds, terminated with the ''Z'' UTC designator.
+
+        '
+    FixedForwardQuote:
+      type: object
+      description: 'Representation of a quote.
+
+        '
+      properties:
+        quoteId:
+          $ref: '#/components/schemas/quoteRef'
+        currencyPair:
+          $ref: '#/components/schemas/CurrencyPair'
+        sourceAmount:
+          $ref: '#/components/schemas/Amount'
+        deliveredAmount:
+          $ref: '#/components/schemas/Amount'
+        appliedRate:
+          $ref: '#/components/schemas/QuotedDecimal'
+        expiresAt:
+          $ref: '#/components/schemas/DatetimeFractionnal'
   requestBodies:
     Quote:
       content:

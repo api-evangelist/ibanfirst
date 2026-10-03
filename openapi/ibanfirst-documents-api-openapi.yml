@@ -224,37 +224,12 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-    ID:
+    Datetime:
       type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
 
         '
     Document:
@@ -289,12 +264,37 @@ components:
 
             '
           type: string
-    Datetime:
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    ID:
       type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
 
         '
   securitySchemes:

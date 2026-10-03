@@ -390,14 +390,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
     QuotedDecimal:
       type: string
       pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
@@ -406,20 +398,14 @@ components:
       description: 'A String representing a formatted floating number.
 
         '
-    Date:
+    ID:
       type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
-    paymentPriorityOption:
-      description: 'A code representing whether this payment has a standard priority, or a priority treatment.
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
 
         '
-      type: string
-      enum:
-      - normal
-      - urgent
     PaymentOption:
       type: object
       description: 'The representation of a payment option object. This object contains information about priorityPaymentOption and feePaymentOption for a payment.
@@ -471,105 +457,88 @@ components:
       - 24H
       - 1H
       - instant
-    ErrorVOP:
+    Payment:
       type: object
-      description: 'Representation of an error.
+      description: 'Representation of a payment.
 
         '
       properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
+        id:
+          $ref: '#/components/schemas/ID'
+        status:
+          type: string
+          description: 'The code identifying the payment status.
 
             '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
+          enum:
+          - awaitingconfirmation
+          - planified
+          - rejected
+          - finalized
+          - canceled
+          - refused
+          - blocked
+          - waitingsignature
+          - processing
+        createdDate:
+          $ref: '#/components/schemas/Datetime'
+        desiredExecutionDate:
+          $ref: '#/components/schemas/Date'
+        executionDate:
+          $ref: '#/components/schemas/Date'
+        amount:
+          $ref: '#/components/schemas/Amount'
+        counterValue:
+          $ref: '#/components/schemas/Amount'
+        rate:
+          $ref: '#/components/schemas/Rate'
+        tag:
+          type:
+          - string
+          - 'null'
+          maxLength: 50
+          description: 'The custom reference related to the payment. (For internal use only, not communicated to the beneficiary).
 
             '
-        errorMessage:
-          type: string
-          description: 'Error description. '
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
+        externalBankAccountId:
+          $ref: '#/components/schemas/ID'
+        sourceWalletId:
+          $ref: '#/components/schemas/ID'
+        communication:
+          type:
+          - string
+          - 'null'
+          maxLength: 76
+          description: 'The wording of the payment.
 
             '
-        payeeVerification:
-          type: object
-          description: ''
-          properties:
-            status:
-              type: string
-              enum:
-              - PARTIAL
-              - FAILED
-              description: ''
-            message:
-              type: string
-              description: Verification of payee result details.
-            corrections:
-              type: object
-              description: Proposed modification regarding the beneficiary information.
-              properties:
-                account_holder_name:
-                  type: string
-                  description: Expected beneficiary name.
-                account_holder_type:
-                  type: string
-                  enum:
-                  - Individual
-                  - Corporate
-                  description: Expected beneficiary type.
-    Datetime:
+        priorityPaymentOption:
+          $ref: '#/components/schemas/paymentPriorityOption'
+        feePaymentOption:
+          type: string
+          description: 'The code identifying the charges option for this payment.
+
+            '
+          enum:
+          - BEN
+          - OUR
+          - SHARE
+          - SEPA
+          - DSP
+          - RTGS
+        speedOption:
+          $ref: '#/components/schemas/paymentSpeedOption'
+        feePaymentAmount:
+          $ref: '#/components/schemas/Amount'
+        tracker:
+          type: string
+          description: Payment tracker link. For SWIFT payment only. Not available for payments pending confirmation or signature.
+    Date:
       type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
-
-        '
-    Amount:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of an amount.
-
-        '
-      required:
-      - value
-      - currency
-      properties:
-        value:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currency:
-          $ref: '#/components/schemas/Currency'
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
     PaymentVOP:
       type: object
       description: 'Representation of a payment.
@@ -652,88 +621,94 @@ components:
             message:
               type: string
               description: '`Match` if the beneficiary IBAN and name are a perfect match.'
-    Payment:
-      type: object
-      description: 'Representation of a payment.
-
-        '
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        status:
-          type: string
-          description: 'The code identifying the payment status.
-
-            '
-          enum:
-          - awaitingconfirmation
-          - planified
-          - rejected
-          - finalized
-          - canceled
-          - refused
-          - blocked
-          - waitingsignature
-          - processing
-        createdDate:
-          $ref: '#/components/schemas/Datetime'
-        desiredExecutionDate:
-          $ref: '#/components/schemas/Date'
-        executionDate:
-          $ref: '#/components/schemas/Date'
-        amount:
-          $ref: '#/components/schemas/Amount'
-        counterValue:
-          $ref: '#/components/schemas/Amount'
-        rate:
-          $ref: '#/components/schemas/Rate'
-        tag:
-          type:
-          - string
-          - 'null'
-          maxLength: 50
-          description: 'The custom reference related to the payment. (For internal use only, not communicated to the beneficiary).
-
-            '
-        externalBankAccountId:
-          $ref: '#/components/schemas/ID'
-        sourceWalletId:
-          $ref: '#/components/schemas/ID'
-        communication:
-          type:
-          - string
-          - 'null'
-          maxLength: 76
-          description: 'The wording of the payment.
-
-            '
-        priorityPaymentOption:
-          $ref: '#/components/schemas/paymentPriorityOption'
-        feePaymentOption:
-          type: string
-          description: 'The code identifying the charges option for this payment.
-
-            '
-          enum:
-          - BEN
-          - OUR
-          - SHARE
-          - SEPA
-          - DSP
-          - RTGS
-        speedOption:
-          $ref: '#/components/schemas/paymentSpeedOption'
-        feePaymentAmount:
-          $ref: '#/components/schemas/Amount'
-        tracker:
-          type: string
-          description: Payment tracker link. For SWIFT payment only. Not available for payments pending confirmation or signature.
     CurrencyPair:
       type: string
       pattern: ^[A-Z]{6}$
       format: ^[A-Z]{6}$
       example: EURUSD
       description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+
+        '
+    ErrorVOP:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: 'Error description. '
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+        payeeVerification:
+          type: object
+          description: ''
+          properties:
+            status:
+              type: string
+              enum:
+              - PARTIAL
+              - FAILED
+              description: ''
+            message:
+              type: string
+              description: Verification of payee result details.
+            corrections:
+              type: object
+              description: Proposed modification regarding the beneficiary information.
+              properties:
+                account_holder_name:
+                  type: string
+                  description: Expected beneficiary name.
+                account_holder_type:
+                  type: string
+                  enum:
+                  - Individual
+                  - Corporate
+                  description: Expected beneficiary type.
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
+
+        '
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
+    paymentPriorityOption:
+      description: 'A code representing whether this payment has a standard priority, or a priority treatment.
+
+        '
+      type: string
+      enum:
+      - normal
+      - urgent
     Rate:
       type: object
       description: 'Representation of a Rate.
@@ -754,14 +729,39 @@ components:
           $ref: '#/components/schemas/QuotedDecimal'
         appliedBid:
           $ref: '#/components/schemas/QuotedDecimal'
-    ID:
+    Currency:
       type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
 
         '
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
   securitySchemes:
     X-WSSE:
       type: apiKey

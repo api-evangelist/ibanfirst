@@ -264,14 +264,36 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+    ExternalBankAccount:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          description: 'The three-digit code specifying the currency of the account.
 
-        '
+            '
+          type: string
+        tag:
+          type: string
+          maxLength: 50
+          description: 'Custom reference of the account.
+
+            '
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: 'The code specifying the account (can be either an Iban or an account number).
+
+            '
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
     CorrespondantBank:
       type:
       - object
@@ -294,43 +316,43 @@ components:
             '
         address:
           $ref: '#/components/schemas/Address'
-    ExternalBankAccountVOP:
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Email:
+      type: string
+      description: Beneficiary email address
+      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
+    Error:
       type: object
+      description: 'Representation of an error.
+
+        '
       properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          $ref: '#/components/schemas/Currency'
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference of the account.
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
 
             '
-        accountNumber:
+        errorType:
           type: string
-          maxLength: 40
-          description: 'The code specifying the account (can be either an Iban or an account number).
+          description: 'A short description identifying a general category for the error that occurred.
 
             '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-        contactEmail:
-          $ref: '#/components/schemas/Email'
-        payeeVerification:
-          type: object
-          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
-          properties:
-            status:
-              type: string
-              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
-            message:
-              type: string
-              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
     Address:
       type: object
       description: 'Representation of an address
@@ -377,6 +399,38 @@ components:
           description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
 
             '
+    HolderBank:
+      type: object
+      description: 'Representation of a beneficiary bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            This field is optional only when the account number does not have an Iban format.'
+        clearingCodeType:
+          type: string
+          maxLength: 2
+          description: 'The two-digit code specifying the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        clearingCode:
+          type: string
+          maxLength: 15
+          description: 'The code identifying the branch number on the local clearing network.
+
+            If you does not have a bic, this field is required.'
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
     ErrorVOP:
       type: object
       description: 'Representation of an error.
@@ -428,63 +482,62 @@ components:
                   - Individual
                   - Corporate
                   description: Expected beneficiary type.
-    HolderBank:
+    ExternalBankAccountVOP:
       type: object
-      description: 'Representation of a beneficiary bank.
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
+          type: string
+          maxLength: 50
+          description: 'Custom reference of the account.
+
+            '
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: 'The code specifying the account (can be either an Iban or an account number).
+
+            '
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+        payeeVerification:
+          type: object
+          description: "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n"
+          properties:
+            status:
+              type: string
+              description: '`SUCCESS` if the beneficiary IBAN and name are verified.'
+            message:
+              type: string
+              description: '`Match` if the beneficiary IBAN and name are a perfect match.'
+    ProcessResult:
+      type: object
+      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
 
         '
       properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            This field is optional only when the account number does not have an Iban format.'
-        clearingCodeType:
-          type: string
-          maxLength: 2
-          description: 'The two-digit code specifying the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        clearingCode:
-          type: string
-          maxLength: 15
-          description: 'The code identifying the branch number on the local clearing network.
-
-            If you does not have a bic, this field is required.'
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
+        result:
+          type: boolean
+          description: 'The result of the operation. `true` if the operation is successful, else `false`
 
             '
-        address:
-          $ref: '#/components/schemas/Address'
-    Error:
-      type: object
-      description: 'Representation of an error.
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
 
         '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
     Holder:
       type: object
       description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
@@ -516,59 +569,6 @@ components:
           - Corporate
         address:
           $ref: '#/components/schemas/Address'
-    ProcessResult:
-      type: object
-      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
-
-        '
-      properties:
-        result:
-          type: boolean
-          description: 'The result of the operation. `true` if the operation is successful, else `false`
-
-            '
-    Email:
-      type: string
-      description: Beneficiary email address
-      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
-    ExternalBankAccount:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          description: 'The three-digit code specifying the currency of the account.
-
-            '
-          type: string
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference of the account.
-
-            '
-        accountNumber:
-          type: string
-          maxLength: 40
-          description: 'The code specifying the account (can be either an Iban or an account number).
-
-            '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-        contactEmail:
-          $ref: '#/components/schemas/Email'
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
-
-        '
   securitySchemes:
     X-WSSE:
       type: apiKey
