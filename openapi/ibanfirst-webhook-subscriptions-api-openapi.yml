@@ -327,24 +327,38 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    events:
-      type: array
-      items:
-        type: string
-        enum:
-        - PAYMENT_CREATED
-        - PAYMENT_PLANIFIED
-        - PAYMENT_FINALIZED
-        - PAYMENT_WAITING_SIGNATURE
-        - PAYMENT_AWAITING_CONFIRMATION
-        - PAYMENT_CANCELED
-        - PAYMENT_BLOCKED
-        - PAYMENT_WAITING_JUSTIFICATION
-        - PAYMENT_INCOMING
-        - TRADE_PLANIFIED
-        - TRADE_FINALIZED
-        - TRADE_CANCELED
-        - TRADE_BLOCKED
+    url:
+      type: string
+      description: 'Notifications are sent to this url.
+
+        '
+      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
+      example: https:\www.notification.com
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
     notificationContent:
       type: object
       properties:
@@ -379,13 +393,6 @@ components:
         retryCount:
           description: ''
           type: integer
-    webhookId:
-      type: string
-      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
-      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
-      description: 'ID of the webhook subscription.
-
-        '
     Webhook:
       type: object
       description: 'Representation of a webhook subscription.
@@ -403,38 +410,31 @@ components:
             $ref: '#/components/schemas/events'
         url:
           $ref: '#/components/schemas/url'
-    url:
+    webhookId:
       type: string
-      description: 'Notifications are sent to this url.
+      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+      description: 'ID of the webhook subscription.
 
         '
-      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
-      example: https:\www.notification.com
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
+    events:
+      type: array
+      items:
+        type: string
+        enum:
+        - PAYMENT_CREATED
+        - PAYMENT_PLANIFIED
+        - PAYMENT_FINALIZED
+        - PAYMENT_WAITING_SIGNATURE
+        - PAYMENT_AWAITING_CONFIRMATION
+        - PAYMENT_CANCELED
+        - PAYMENT_BLOCKED
+        - PAYMENT_WAITING_JUSTIFICATION
+        - PAYMENT_INCOMING
+        - TRADE_PLANIFIED
+        - TRADE_FINALIZED
+        - TRADE_CANCELED
+        - TRADE_BLOCKED
   securitySchemes:
     X-WSSE:
       type: apiKey

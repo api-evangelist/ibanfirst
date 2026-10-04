@@ -232,6 +232,39 @@ components:
       description: 'A String representing a date by its year, month, day in month, hour, minute and second.
 
         '
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
     Document:
       type: object
       description: 'Representation of a document.
@@ -264,39 +297,6 @@ components:
 
             '
           type: string
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
-
-        '
   securitySchemes:
     X-WSSE:
       type: apiKey
