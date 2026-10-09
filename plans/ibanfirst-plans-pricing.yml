@@ -139,3 +139,16 @@ x-evidence:
       http_status: 200
       content_type: application/pdf
       bytes: 339113
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  units: []
+  plans:
+  - name: Standard Pricing Conditions
+    access: other
+    model: free
+    model_how: derived
+    units: []
+    periods: []
