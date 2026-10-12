@@ -1,27 +1,26 @@
 ---
-name: Read an iBanFirst treasury position
-description: >-
-  Pull the full multi-currency cash position, statement lines and pending payments — over REST or
-  over iBanFirst's own hosted MCP connector — and reconcile the two surfaces where they disagree.
+name: ibanfirst-read-treasury-position
+description: Pull the full multi-currency cash position, statement lines and pending payments — over REST
+  or over iBanFirst's own hosted MCP connector — and reconcile the two surfaces where they disagree.
 api: openapi/ibanfirst-clientapi-openapi.yml
 api_version: 1.6.0
 base_url: https://api.ibanfirst.com/api
 test_base_url: https://api-demo.ibanfirst.com/api
 mcp: https://mcp.ibanfirst.com/mcp
 operations:
-  - 'GET /wallets'
-  - 'GET /wallets/{id}'
-  - 'GET /wallets/{id}/balance/{date}'
-  - 'GET /financialMovements'
-  - 'GET /financialMovements/{id}'
-  - 'GET /payments/{status}'
-  - 'GET /externalBankAccounts'
-  - 'GET /documents/RIB'
+- getWallets
+- getWalletsById
+- getWalletsByIdBalanceByDate
+- getFinancialMovements
+- getFinancialMovementsById
+- getPaymentsByStatus
+- getExternalBankAccounts
+- getDocumentsRIB
 generated: '2026-08-17'
 method: generated
-source: >-
-  openapi/ibanfirst-clientapi-openapi.yml, mcp/ibanfirst-mcp.yml,
-  mcp/ibanfirst-tool-crosswalk.yml, data-model/ibanfirst-data-model.yml
+source: openapi/ibanfirst-clientapi-openapi.yml, mcp/ibanfirst-mcp.yml, mcp/ibanfirst-tool-crosswalk.yml,
+  data-model/ibanfirst-data-model.yml
+title: Read an iBanFirst treasury position
 ---
 
 # Read an iBanFirst treasury position

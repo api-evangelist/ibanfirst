@@ -1,28 +1,26 @@
 ---
-name: Pay a supplier abroad with iBanFirst
-description: >-
-  Register a beneficiary, price the payment, create it, and confirm it — the core money-movement
-  flow of the iBanFirst REST API, including verification-of-payee handling and the retry hazard
-  that comes from the API having no idempotency key.
+name: ibanfirst-pay-a-supplier
+description: Register a beneficiary, price the payment, create it, and confirm it — the core money-movement
+  flow of the iBanFirst REST API, including verification-of-payee handling and the retry hazard that comes
+  from the API having no idempotency key.
 api: openapi/ibanfirst-clientapi-openapi.yml
 api_version: 1.6.0
 base_url: https://api.ibanfirst.com/api
 test_base_url: https://api-demo.ibanfirst.com/api
 operations:
-  - 'GET /wallets'
-  - 'POST /externalBankAccounts'
-  - 'GET /externalBankAccounts'
-  - 'GET /payments/options/{walletId}/{externalBankAccountId}'
-  - 'POST /payments'
-  - 'PUT /payments/{id}/confirm'
-  - 'GET /payments/{id}'
-  - 'DELETE /payments/{id}'
-  - 'GET /logs/{nonce}'
+- getWallets
+- postExternalBankAccounts
+- getExternalBankAccounts
+- getPaymentsOptionsByWalletIdByExternalBankAccountId
+- postPayments
+- putPaymentsByIdConfirm
+- getPaymentsById
+- deletePaymentsById
+- getLogsByNonce
 generated: '2026-08-17'
 method: generated
-source: >-
-  openapi/ibanfirst-clientapi-openapi.yml, conventions/ibanfirst-conventions.yml,
-  errors/ibanfirst-problem-types.yml
+source: openapi/ibanfirst-clientapi-openapi.yml, conventions/ibanfirst-conventions.yml, errors/ibanfirst-problem-types.yml
+title: Pay a supplier abroad with iBanFirst
 ---
 
 # Pay a supplier abroad with iBanFirst

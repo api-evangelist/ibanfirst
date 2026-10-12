@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-amount-schema.json",
+  "title": "Amount",
+  "description": "Representation of an amount.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Amount",
+  "type": [
+    "object",
+    "null"
+  ],
+  "required": [
+    "value",
+    "currency"
+  ],
+  "properties": {
+    "value": {
+      "$ref": "#/$defs/QuotedDecimal"
+    },
+    "currency": {
+      "$ref": "#/$defs/Currency"
+    }
+  },
+  "$defs": {
+    "Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "format": "^[A-Z]{3}$",
+      "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n"
+    },
+    "QuotedDecimal": {
+      "type": "string",
+      "pattern": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "format": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "description": "A String representing a formatted floating number.\n"
+    }
+  }
+}

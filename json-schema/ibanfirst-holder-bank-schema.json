@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-holder-bank-schema.json",
+  "title": "HolderBank",
+  "description": "Representation of a beneficiary bank.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/HolderBank",
+  "type": "object",
+  "properties": {
+    "bic": {
+      "type": "string",
+      "maxLength": 11,
+      "description": "Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.\nThis field is optional only when the account number does not have an Iban format."
+    },
+    "clearingCodeType": {
+      "type": "string",
+      "maxLength": 2,
+      "description": "The two-digit code specifying the local clearing network.\nIf you does not have a bic, this field is required."
+    },
+    "clearingCode": {
+      "type": "string",
+      "maxLength": 15,
+      "description": "The code identifying the branch number on the local clearing network.\nIf you does not have a bic, this field is required."
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "The beneficiary bank name.\n"
+    },
+    "address": {
+      "$ref": "#/$defs/Address"
+    }
+  },
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "description": "Representation of an address\n",
+      "required": [
+        "country"
+      ],
+      "properties": {
+        "street": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 255,
+          "description": "The street and street number for the address described.\n"
+        },
+        "postCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 15,
+          "description": "The ZIP/Post code for the address described.\n"
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 35,
+          "description": "The city for the address described.\n"
+        },
+        "province": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2,
+          "description": "The province code for the address described. This field could be required if the country use a province system, like United States or Canada. To see a full list of province code, please refer to http://www.mapability.com/ei8ic/contest/states.php.\n"
+        },
+        "country": {
+          "type": "string",
+          "maxLength": 8,
+          "description": "The two-letters abbreviation for the country, following the ISO-3166 for the address described.\n"
+        }
+      }
+    }
+  }
+}

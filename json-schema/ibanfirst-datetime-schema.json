@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-datetime-schema.json",
+  "title": "Datetime",
+  "description": "A String representing a date by its year, month, day in month, hour, minute and second.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-documents-api-openapi.yml#/components/schemas/Datetime",
+  "type": "string",
+  "pattern": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+  "format": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$"
+}

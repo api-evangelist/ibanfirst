@@ -1,27 +1,25 @@
 ---
-name: Subscribe to iBanFirst payment and trade events
-description: >-
-  Create a webhook subscription, verify the HMAC-SHA256 signature correctly, survive the short
+name: ibanfirst-subscribe-to-payment-events
+description: Create a webhook subscription, verify the HMAC-SHA256 signature correctly, survive the short
   three-attempt retry envelope, rotate the secret, and read the failed-notification log.
 api: openapi/ibanfirst-clientapi-openapi.yml
 api_version: 1.6.0
 base_url: https://api.ibanfirst.com/api
 test_base_url: https://api-demo.ibanfirst.com/api
 operations:
-  - 'POST /webhooks'
-  - 'GET /webhooks'
-  - 'GET /webhooks/{webhookId}'
-  - 'PATCH /webhooks/{webhookId}'
-  - 'DELETE /webhooks/{webhookId}'
-  - 'POST /webhooks/{webhookId}/rotate-secret'
-  - 'GET /webhooks/{webhookId}/failed-notifications'
-  - 'GET /payments/{id}'
-  - 'GET /trades/{id}'
+- postWebhooks
+- getWebhooks
+- getWebhooksByWebhookId
+- patchWebhooksByWebhookId
+- deleteWebhooksByWebhookId
+- postWebhooksByWebhookIdRotateSecret
+- getWebhooksByWebhookIdFailedNotifications
+- getPaymentsById
+- getTradesById
 generated: '2026-08-17'
 method: generated
-source: >-
-  openapi/ibanfirst-clientapi-openapi.yml, asyncapi/ibanfirst-webhooks.yml,
-  https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+source: openapi/ibanfirst-clientapi-openapi.yml, asyncapi/ibanfirst-webhooks.yml, https://docs.ibanfirst.com/api/clientapi/webhook-subscriptions
+title: Subscribe to iBanFirst payment and trade events
 ---
 
 # Subscribe to iBanFirst payment and trade events

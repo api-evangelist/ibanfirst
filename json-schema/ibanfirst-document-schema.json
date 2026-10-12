@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-document-schema.json",
+  "title": "Document",
+  "description": "Representation of a document.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-documents-api-openapi.yml#/components/schemas/Document",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ID"
+    },
+    "name": {
+      "description": "The name of the document.\n",
+      "type": "string"
+    },
+    "type": {
+      "description": "The type of the document.\n",
+      "type": "string"
+    },
+    "createdDate": {
+      "$ref": "#/$defs/Datetime"
+    },
+    "lastOpennedDate": {
+      "$ref": "#/$defs/Datetime"
+    },
+    "mimeType": {
+      "description": "The MIME type of the document.\n",
+      "type": "string"
+    },
+    "link": {
+      "description": "The one-time link to access or download the document.\n",
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "Datetime": {
+      "type": "string",
+      "pattern": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "format": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "description": "A String representing a date by its year, month, day in month, hour, minute and second.\n"
+    },
+    "ID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "format": "^[A-Za-z0-9]+$",
+      "description": "A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.\n"
+    }
+  }
+}

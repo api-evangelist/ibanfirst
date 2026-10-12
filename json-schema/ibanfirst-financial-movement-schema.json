@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-financial-movement-schema.json",
+  "title": "FinancialMovement",
+  "description": "Representation of a financial movement\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-financial-movements-api-openapi.yml#/components/schemas/FinancialMovement",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ID"
+    },
+    "bookingDate": {
+      "$ref": "#/$defs/Date"
+    },
+    "valueDate": {
+      "$ref": "#/$defs/Date"
+    },
+    "orderingAccountNumber": {
+      "type": "string",
+      "maxLength": 40,
+      "description": "The number referring the ordering account of the transfer.\n"
+    },
+    "orderingCustomer": {
+      "type": "string",
+      "description": "A free formatted String representing the ordering customer with it's name and it's address.\n"
+    },
+    "orderingInstitution": {
+      "type": "string",
+      "description": "A free formatted String representing the ordering institution with it's name and it's address.\n"
+    },
+    "orderingAmount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "beneficiaryAccountNumber": {
+      "type": "string",
+      "maxLength": 40,
+      "description": "The number referring the beneficiary account.\n"
+    },
+    "beneficiaryCustomer": {
+      "type": "string",
+      "description": "A free formatted String representing the beneficiary customer with it's name and it's address.\n"
+    },
+    "beneficiaryInstitution": {
+      "type": "string",
+      "description": "A free formatted String representing the beneficiary institution with it's name and it's address.\n"
+    },
+    "beneficiaryAmount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "remittanceInformation": {
+      "type": "string",
+      "description": "The communication field.\n"
+    },
+    "chargesDetails": {
+      "type": "string",
+      "description": "The charges details related to the transfer.\n"
+    },
+    "exchangeRate": {
+      "type": "number",
+      "format": "float",
+      "description": "The exchange rate applied on the transfer.\n"
+    },
+    "typeLabel": {
+      "type": "string",
+      "description": "The type of the financial movement.\n"
+    },
+    "internalReference": {
+      "type": "string",
+      "description": "Internal Reference of the financial movement.\n"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the financial movement.\n"
+    }
+  },
+  "$defs": {
+    "Amount": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Representation of an amount.\n",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        }
+      }
+    },
+    "Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "format": "^[A-Z]{3}$",
+      "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n"
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "format": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "description": "A String representing a date by its year, month and day in month.\n    \n"
+    },
+    "ID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "format": "^[A-Za-z0-9]+$",
+      "description": "A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.\n"
+    },
+    "QuotedDecimal": {
+      "type": "string",
+      "pattern": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "format": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "description": "A String representing a formatted floating number.\n"
+    }
+  }
+}

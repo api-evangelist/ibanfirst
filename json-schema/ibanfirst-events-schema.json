@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-events-schema.json",
+  "title": "events",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/events",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "enum": [
+      "PAYMENT_CREATED",
+      "PAYMENT_PLANIFIED",
+      "PAYMENT_FINALIZED",
+      "PAYMENT_WAITING_SIGNATURE",
+      "PAYMENT_AWAITING_CONFIRMATION",
+      "PAYMENT_CANCELED",
+      "PAYMENT_BLOCKED",
+      "PAYMENT_WAITING_JUSTIFICATION",
+      "PAYMENT_INCOMING",
+      "TRADE_PLANIFIED",
+      "TRADE_FINALIZED",
+      "TRADE_CANCELED",
+      "TRADE_BLOCKED"
+    ]
+  }
+}

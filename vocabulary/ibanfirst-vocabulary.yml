@@ -1,0 +1,264 @@
+generated: '2026-10-12'
+method: derived
+generator: derive-vocabulary.py
+source:
+- openapi/ibanfirst-accounts-api-openapi.yml
+- openapi/ibanfirst-beneficiaries-api-openapi.yml
+- openapi/ibanfirst-documents-api-openapi.yml
+- openapi/ibanfirst-financial-movements-api-openapi.yml
+- openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml
+vocabulary:
+  name: iBanFirst Domain Vocabulary
+  description: 'Terms declared by iBanFirst''s own API contract: its resource groups, objects and enumerations, with the contract''s definitions.
+    Derived, not authored.'
+  version: '2026-10-12'
+  terms:
+  - term: Accounts
+    definition: Each of your accounts has its own specific currency and IBAN. The API allows you to get details and balances about each account
+      in real time. **Note :** ***accounts*** are also labelled as ***wallets*** in the iBanFirst API.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-accounts-api-openapi.yml
+  - term: Beneficiaries
+    definition: A beneficiary can be either your own account in another bank or a third party recipient account. Beneficiaries can be created
+      or deleted through the API. **Note :** ***beneficiaries*** are also labelled as ***externalBankAccounts*** in the iBanFirst API.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml
+  - term: Documents
+    definition: The API allows you to access your documents stored on the iBanFirst platform through a one-time access link. Documents must be
+      generated on the platform before being available through the API.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-documents-api-openapi.yml
+  - term: Financial movements
+    definition: The API allows you to retrieve all financial movements from your accounts.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-financial-movements-api-openapi.yml
+  - term: Fixed forward payment contract
+    definition: Book a fixed forward payment contracts instantly on iBanFirst without manual intervention.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml
+  - term: Payments
+    definition: 'Sending funds from one of your iBanFirst accounts to your own external bank account or a third-party recipient involves two steps:
+      1.'
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-payments-api-openapi.yml
+  - term: Spot trades
+    definition: The API provides a deliverable FX facility and deliverable FX liquidity.
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-spot-trades-api-openapi.yml
+  - term: Webhook Subscriptions
+    definition: '**1.'
+    tags:
+    - Resource Group
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml
+  - term: ID
+    definition: A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/ID
+  - term: Holder
+    definition: 'What we call a Holder can be either an Individual or an Organisation that own the account. May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+      In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.'
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Holder
+  - term: Wallet
+    definition: Representation of a Wallet
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Wallet
+  - term: Balance
+    definition: Representation of a balance.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Balance
+  - term: Address
+    definition: Representation of an address
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Address
+  - term: Error
+    definition: Representation of an error.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Error
+  - term: Currency
+    definition: A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Currency
+  - term: HolderBank
+    definition: Representation of a beneficiary bank.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/HolderBank
+  - term: CorrespondantBank
+    definition: Representation of a correspondant bank.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/CorrespondantBank
+  - term: QuotedDecimal
+    definition: A String representing a formatted floating number.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/QuotedDecimal
+  - term: Date
+    definition: A String representing a date by its year, month and day in month.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Date
+  - term: Amount
+    definition: Representation of an amount.
+    tags:
+    - Object
+    source: openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Amount
+  - term: ExternalBankAccountVOP
+    definition: 'Object declared by the contract with fields: id, currency, tag, accountNumber, correspondentBank, holderBank, holder, contactEmail,
+      payeeVerification.'
+    tags:
+    - Object
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/ExternalBankAccountVOP
+  - term: Email
+    definition: Beneficiary email address
+    tags:
+    - Object
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/Email
+  - term: ProcessResult
+    definition: As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
+    tags:
+    - Object
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/ProcessResult
+  - term: ErrorVOP
+    definition: Representation of an error.
+    tags:
+    - Object
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/ErrorVOP
+  - term: ExternalBankAccount
+    definition: 'Object declared by the contract with fields: id, currency, tag, accountNumber, correspondentBank, holderBank, holder, contactEmail.'
+    tags:
+    - Object
+    source: openapi/ibanfirst-beneficiaries-api-openapi.yml#/components/schemas/ExternalBankAccount
+  - term: Datetime
+    definition: A String representing a date by its year, month, day in month, hour, minute and second.
+    tags:
+    - Object
+    source: openapi/ibanfirst-documents-api-openapi.yml#/components/schemas/Datetime
+  - term: Document
+    definition: Representation of a document.
+    tags:
+    - Object
+    source: openapi/ibanfirst-documents-api-openapi.yml#/components/schemas/Document
+  - term: FinancialMovement
+    definition: Representation of a financial movement
+    tags:
+    - Object
+    source: openapi/ibanfirst-financial-movements-api-openapi.yml#/components/schemas/FinancialMovement
+  - term: FixedForwardQuote
+    definition: Representation of a quote.
+    tags:
+    - Object
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/FixedForwardQuote
+  - term: quoteRef
+    definition: A String representing the unique ID of the quote.
+    tags:
+    - Object
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/quoteRef
+  - term: DatetimeFractionnal
+    definition: A string representing a UTC date-time in ISO 8601 format including year, month, day, hour, minute, second, and fractional seconds,
+      terminated with the 'Z' UTC designator.
+    tags:
+    - Object
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/DatetimeFractionnal
+  - term: FixedForwardTrade
+    definition: Representation of a fixed forward payment contract.
+    tags:
+    - Object
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/FixedForwardTrade
+  - term: CurrencyPair
+    definition: A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized
+      letters.
+    tags:
+    - Object
+    source: openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/CurrencyPair
+  - term: Log
+    definition: Representation of a log.
+    tags:
+    - Object
+    source: openapi/ibanfirst-logs-api-openapi.yml#/components/schemas/Log
+  - term: PaymentVOP
+    definition: Representation of a payment.
+    tags:
+    - Object
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/PaymentVOP
+  - term: paymentPriorityOption
+    definition: A code representing whether this payment has a standard priority, or a priority treatment.
+    tags:
+    - Enumeration
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/paymentPriorityOption
+  - term: PaymentOption
+    definition: The representation of a payment option object. This object contains information about priorityPaymentOption and feePaymentOption
+      for a payment.
+    tags:
+    - Object
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/PaymentOption
+  - term: Rate
+    definition: Representation of a Rate.
+    tags:
+    - Object
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/Rate
+  - term: Payment
+    definition: Representation of a payment.
+    tags:
+    - Object
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/Payment
+  - term: paymentSpeedOption
+    definition: A code representing the speed option.
+    tags:
+    - Enumeration
+    source: openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/paymentSpeedOption
+  - term: Trade
+    definition: Representation of a Trade.
+    tags:
+    - Object
+    source: openapi/ibanfirst-spot-trades-api-openapi.yml#/components/schemas/Trade
+  - term: TradeReconciliation
+    definition: Representation of a Trade.
+    tags:
+    - Object
+    source: openapi/ibanfirst-spot-trades-api-openapi.yml#/components/schemas/TradeReconciliation
+  - term: Quote
+    definition: Representation of a quote.
+    tags:
+    - Object
+    source: openapi/ibanfirst-spot-trades-api-openapi.yml#/components/schemas/Quote
+  - term: url
+    definition: Notifications are sent to this url.
+    tags:
+    - Object
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/url
+  - term: notificationContent
+    definition: 'Object declared by the contract with fields: payload, eventType, webhookId.'
+    tags:
+    - Object
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/notificationContent
+  - term: webhookFailedNotification
+    definition: 'Object declared by the contract with fields: id, notificationContent, errorMessage, httpStatusCode, failedAt, retryCount.'
+    tags:
+    - Object
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/webhookFailedNotification
+  - term: Webhook
+    definition: Representation of a webhook subscription.
+    tags:
+    - Object
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/Webhook
+  - term: webhookId
+    definition: ID of the webhook subscription.
+    tags:
+    - Object
+    source: openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/webhookId

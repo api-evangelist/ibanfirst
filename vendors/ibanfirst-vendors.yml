@@ -1,0 +1,86 @@
+generated: '2026-10-12'
+method: probed
+source: pre-flight dossier (docs platform, portal detections) + CNAME chains and response headers of the hosts apis.yml names
+registry: all/0-working/vendors.yml
+areas_vocabulary:
+- documentation
+- developer-portal
+- api-gateway
+- cdn
+- hosting
+- sdk-generation
+- api-collections
+- status-page
+- support
+- community
+- identity
+- mcp-hosting
+vendors:
+- vendor: postman
+  name: Postman
+  area: api-collections
+  host: www.postman.com
+  evidence: https://www.postman.com/productibf/ibanfirst-rest-api-workspace/collection/d24hl8d/ibanfirst-rest-api
+  signal: url:postman.com
+  confidence: high
+  kin_score:
+  - postman_collection
+- vendor: cloudflare
+  name: Cloudflare
+  area: cdn
+  host: support.ibanfirst.com
+  evidence: cname:cloudflare.net
+  signal: cname
+  confidence: high
+  kin_score:
+  - https_enforced
+  - hsts
+- vendor: cloudfront
+  name: Amazon CloudFront
+  area: cdn
+  host: docs.ibanfirst.com
+  evidence: header:x-amz-cf-id
+  signal: header
+  confidence: high
+  kin_score: []
+- vendor: hubspot
+  name: HubSpot
+  area: hosting
+  host: info.ibanfirst.com
+  evidence: cname:hubspot.net
+  signal: cname
+  confidence: high
+  kin_score: []
+- vendor: vercel
+  name: Vercel
+  area: hosting
+  host: www.ibanfirst.com
+  evidence: header:x-vercel-id
+  signal: header
+  confidence: high
+  kin_score: []
+reliance:
+  areas_vendor_served:
+  - api-collections
+  - cdn
+  - hosting
+  vendor_count: 5
+  areas_observed: 12
+  share_of_observable_areas: 0.25
+  note: areas where a third party was DETECTED serving this provider; an area absent here was either self-run or not observed, and this script
+    cannot tell those apart
+checked:
+- 'docs-platform: not probed'
+- www.ibanfirst.com (Website)
+- docs.ibanfirst.com (DeveloperPortal)
+- docs.ibanfirst.com (Documentation)
+- docs.ibanfirst.com (APIReference)
+- docs.ibanfirst.com (GettingStarted)
+- support.ibanfirst.com (Support)
+- info.ibanfirst.com (SignUp)
+- platform.ibanfirst.com (Login)
+- www.postman.com (Postman)
+- mcp.ibanfirst.com (baseURL)
+- open-api-sdbx.ibanfirst.com (baseURL)
+- api.ibanfirst.com (baseURL)
+- mcp.ibanfirst.com (mcp)

@@ -1,0 +1,462 @@
+{
+  "@context": {
+    "@vocab": "https://ibanfirst.com/schema#",
+    "schema": "https://schema.org/",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "ibanfirst": "https://ibanfirst.com/schema#",
+    "Holder": "ibanfirst:Holder",
+    "name": {
+      "@id": "ibanfirst:name",
+      "@type": "xsd:string"
+    },
+    "type": {
+      "@id": "ibanfirst:type",
+      "@type": "xsd:string"
+    },
+    "address": {
+      "@id": "ibanfirst:address",
+      "@type": "@id"
+    },
+    "Wallet": "ibanfirst:Wallet",
+    "id": {
+      "@id": "ibanfirst:id",
+      "@type": "@id"
+    },
+    "currency": {
+      "@id": "ibanfirst:currency",
+      "@type": "@id"
+    },
+    "tag": {
+      "@id": "ibanfirst:tag",
+      "@type": "xsd:string"
+    },
+    "status": {
+      "@id": "ibanfirst:status",
+      "@type": "xsd:string"
+    },
+    "accountNumber": {
+      "@id": "ibanfirst:accountNumber",
+      "@type": "xsd:string"
+    },
+    "correspondentBank": {
+      "@id": "ibanfirst:correspondentBank",
+      "@type": "@id"
+    },
+    "holderBank": {
+      "@id": "ibanfirst:holderBank",
+      "@type": "@id"
+    },
+    "holder": {
+      "@id": "ibanfirst:holder",
+      "@type": "@id"
+    },
+    "Balance": "ibanfirst:Balance",
+    "closingDate": {
+      "@id": "ibanfirst:closingDate",
+      "@type": "@id"
+    },
+    "bookingAmount": {
+      "@id": "ibanfirst:bookingAmount",
+      "@type": "@id"
+    },
+    "valueAmount": {
+      "@id": "ibanfirst:valueAmount",
+      "@type": "@id"
+    },
+    "Address": "ibanfirst:Address",
+    "street": {
+      "@id": "ibanfirst:street",
+      "@type": "xsd:string"
+    },
+    "postCode": {
+      "@id": "ibanfirst:postCode",
+      "@type": "xsd:string"
+    },
+    "city": {
+      "@id": "ibanfirst:city",
+      "@type": "xsd:string"
+    },
+    "province": {
+      "@id": "ibanfirst:province",
+      "@type": "xsd:string"
+    },
+    "country": {
+      "@id": "ibanfirst:country",
+      "@type": "xsd:string"
+    },
+    "Error": "ibanfirst:Error",
+    "errorCode": {
+      "@id": "ibanfirst:errorCode",
+      "@type": "xsd:decimal"
+    },
+    "errorType": {
+      "@id": "ibanfirst:errorType",
+      "@type": "xsd:string"
+    },
+    "errorMessage": {
+      "@id": "ibanfirst:errorMessage",
+      "@type": "xsd:string"
+    },
+    "link": {
+      "@id": "ibanfirst:link",
+      "@type": "xsd:string"
+    },
+    "HolderBank": "ibanfirst:HolderBank",
+    "bic": {
+      "@id": "ibanfirst:bic",
+      "@type": "xsd:string"
+    },
+    "clearingCodeType": {
+      "@id": "ibanfirst:clearingCodeType",
+      "@type": "xsd:string"
+    },
+    "clearingCode": {
+      "@id": "ibanfirst:clearingCode",
+      "@type": "xsd:string"
+    },
+    "CorrespondantBank": "ibanfirst:CorrespondantBank",
+    "Amount": "ibanfirst:Amount",
+    "value": {
+      "@id": "ibanfirst:value",
+      "@type": "@id"
+    },
+    "ExternalBankAccountVOP": "ibanfirst:ExternalBankAccountVOP",
+    "contactEmail": {
+      "@id": "ibanfirst:contactEmail",
+      "@type": "@id"
+    },
+    "payeeVerification": {
+      "@id": "ibanfirst:payeeVerification"
+    },
+    "ProcessResult": "ibanfirst:ProcessResult",
+    "result": {
+      "@id": "ibanfirst:result",
+      "@type": "xsd:boolean"
+    },
+    "ErrorVOP": "ibanfirst:ErrorVOP",
+    "ExternalBankAccount": "ibanfirst:ExternalBankAccount",
+    "Document": "ibanfirst:Document",
+    "createdDate": {
+      "@id": "ibanfirst:createdDate",
+      "@type": "@id"
+    },
+    "lastOpennedDate": {
+      "@id": "ibanfirst:lastOpennedDate",
+      "@type": "@id"
+    },
+    "mimeType": {
+      "@id": "ibanfirst:mimeType",
+      "@type": "xsd:string"
+    },
+    "FinancialMovement": "ibanfirst:FinancialMovement",
+    "bookingDate": {
+      "@id": "ibanfirst:bookingDate",
+      "@type": "@id"
+    },
+    "valueDate": {
+      "@id": "ibanfirst:valueDate",
+      "@type": "@id"
+    },
+    "orderingAccountNumber": {
+      "@id": "ibanfirst:orderingAccountNumber",
+      "@type": "xsd:string"
+    },
+    "orderingCustomer": {
+      "@id": "ibanfirst:orderingCustomer",
+      "@type": "xsd:string"
+    },
+    "orderingInstitution": {
+      "@id": "ibanfirst:orderingInstitution",
+      "@type": "xsd:string"
+    },
+    "orderingAmount": {
+      "@id": "ibanfirst:orderingAmount",
+      "@type": "@id"
+    },
+    "beneficiaryAccountNumber": {
+      "@id": "ibanfirst:beneficiaryAccountNumber",
+      "@type": "xsd:string"
+    },
+    "beneficiaryCustomer": {
+      "@id": "ibanfirst:beneficiaryCustomer",
+      "@type": "xsd:string"
+    },
+    "beneficiaryInstitution": {
+      "@id": "ibanfirst:beneficiaryInstitution",
+      "@type": "xsd:string"
+    },
+    "beneficiaryAmount": {
+      "@id": "ibanfirst:beneficiaryAmount",
+      "@type": "@id"
+    },
+    "remittanceInformation": {
+      "@id": "ibanfirst:remittanceInformation",
+      "@type": "xsd:string"
+    },
+    "chargesDetails": {
+      "@id": "ibanfirst:chargesDetails",
+      "@type": "xsd:string"
+    },
+    "exchangeRate": {
+      "@id": "ibanfirst:exchangeRate",
+      "@type": "xsd:decimal"
+    },
+    "typeLabel": {
+      "@id": "ibanfirst:typeLabel",
+      "@type": "xsd:string"
+    },
+    "internalReference": {
+      "@id": "ibanfirst:internalReference",
+      "@type": "xsd:string"
+    },
+    "description": {
+      "@id": "ibanfirst:description",
+      "@type": "xsd:string"
+    },
+    "FixedForwardQuote": "ibanfirst:FixedForwardQuote",
+    "quoteId": {
+      "@id": "ibanfirst:quoteId",
+      "@type": "@id"
+    },
+    "currencyPair": {
+      "@id": "ibanfirst:currencyPair",
+      "@type": "@id"
+    },
+    "sourceAmount": {
+      "@id": "ibanfirst:sourceAmount",
+      "@type": "@id"
+    },
+    "deliveredAmount": {
+      "@id": "ibanfirst:deliveredAmount",
+      "@type": "@id"
+    },
+    "appliedRate": {
+      "@id": "ibanfirst:appliedRate",
+      "@type": "@id"
+    },
+    "expiresAt": {
+      "@id": "ibanfirst:expiresAt",
+      "@type": "@id"
+    },
+    "FixedForwardTrade": "ibanfirst:FixedForwardTrade",
+    "fixedForwardId": {
+      "@id": "ibanfirst:fixedForwardId",
+      "@type": "@id"
+    },
+    "deliveryDate": {
+      "@id": "ibanfirst:deliveryDate",
+      "@type": "@id"
+    },
+    "side": {
+      "@id": "ibanfirst:side",
+      "@type": "xsd:string"
+    },
+    "sourceAccountId": {
+      "@id": "ibanfirst:sourceAccountId",
+      "@type": "@id"
+    },
+    "deliveryAccountId": {
+      "@id": "ibanfirst:deliveryAccountId",
+      "@type": "@id"
+    },
+    "Log": "ibanfirst:Log",
+    "createdAt": {
+      "@id": "ibanfirst:createdAt",
+      "@type": "@id"
+    },
+    "closedAt": {
+      "@id": "ibanfirst:closedAt",
+      "@type": "@id"
+    },
+    "tokenNonce": {
+      "@id": "ibanfirst:tokenNonce",
+      "@type": "xsd:string"
+    },
+    "remoteAddress": {
+      "@id": "ibanfirst:remoteAddress",
+      "@type": "xsd:string"
+    },
+    "requestMethod": {
+      "@id": "ibanfirst:requestMethod",
+      "@type": "xsd:string"
+    },
+    "uriRequested": {
+      "@id": "ibanfirst:uriRequested",
+      "@type": "xsd:string"
+    },
+    "parametersGiven": {
+      "@id": "ibanfirst:parametersGiven",
+      "@type": "xsd:string"
+    },
+    "requestBody": {
+      "@id": "ibanfirst:requestBody",
+      "@type": "xsd:string"
+    },
+    "httpResponseCode": {
+      "@id": "ibanfirst:httpResponseCode",
+      "@type": "xsd:decimal"
+    },
+    "responseBody": {
+      "@id": "ibanfirst:responseBody",
+      "@type": "xsd:string"
+    },
+    "restErrorTypeId": {
+      "@id": "ibanfirst:restErrorTypeId",
+      "@type": "xsd:decimal"
+    },
+    "login": {
+      "@id": "ibanfirst:login",
+      "@type": "xsd:string"
+    },
+    "legalname": {
+      "@id": "ibanfirst:legalname",
+      "@type": "xsd:string"
+    },
+    "PaymentVOP": "ibanfirst:PaymentVOP",
+    "desiredExecutionDate": {
+      "@id": "ibanfirst:desiredExecutionDate",
+      "@type": "@id"
+    },
+    "executionDate": {
+      "@id": "ibanfirst:executionDate",
+      "@type": "@id"
+    },
+    "amount": {
+      "@id": "ibanfirst:amount",
+      "@type": "@id"
+    },
+    "counterValue": {
+      "@id": "ibanfirst:counterValue",
+      "@type": "@id"
+    },
+    "rate": {
+      "@id": "ibanfirst:rate",
+      "@type": "@id"
+    },
+    "externalBankAccountId": {
+      "@id": "ibanfirst:externalBankAccountId",
+      "@type": "@id"
+    },
+    "sourceWalletId": {
+      "@id": "ibanfirst:sourceWalletId",
+      "@type": "@id"
+    },
+    "communication": {
+      "@id": "ibanfirst:communication",
+      "@type": "xsd:string"
+    },
+    "priorityPaymentOption": {
+      "@id": "ibanfirst:priorityPaymentOption",
+      "@type": "@id"
+    },
+    "feePaymentOption": {
+      "@id": "ibanfirst:feePaymentOption",
+      "@type": "xsd:string"
+    },
+    "speedOption": {
+      "@id": "ibanfirst:speedOption",
+      "@type": "@id"
+    },
+    "feePaymentAmount": {
+      "@id": "ibanfirst:feePaymentAmount",
+      "@type": "@id"
+    },
+    "tracker": {
+      "@id": "ibanfirst:tracker",
+      "@type": "xsd:string"
+    },
+    "paymentPriorityOption": "ibanfirst:paymentPriorityOption",
+    "PaymentOption": "ibanfirst:PaymentOption",
+    "paymentOption": {
+      "@id": "ibanfirst:paymentOption"
+    },
+    "Rate": "ibanfirst:Rate",
+    "midMarket": {
+      "@id": "ibanfirst:midMarket",
+      "@type": "@id"
+    },
+    "date": {
+      "@id": "ibanfirst:date",
+      "@type": "@id"
+    },
+    "coreAsk": {
+      "@id": "ibanfirst:coreAsk",
+      "@type": "@id"
+    },
+    "coreBid": {
+      "@id": "ibanfirst:coreBid",
+      "@type": "@id"
+    },
+    "appliedAsk": {
+      "@id": "ibanfirst:appliedAsk",
+      "@type": "@id"
+    },
+    "appliedBid": {
+      "@id": "ibanfirst:appliedBid",
+      "@type": "@id"
+    },
+    "Payment": "ibanfirst:Payment",
+    "paymentSpeedOption": "ibanfirst:paymentSpeedOption",
+    "Trade": "ibanfirst:Trade",
+    "TradeReconciliation": "ibanfirst:TradeReconciliation",
+    "deliveryWalletId": {
+      "@id": "ibanfirst:deliveryWalletId",
+      "@type": "@id"
+    },
+    "accountSourceNumber": {
+      "@id": "ibanfirst:accountSourceNumber",
+      "@type": "xsd:string"
+    },
+    "accountTargetNumber": {
+      "@id": "ibanfirst:accountTargetNumber",
+      "@type": "xsd:string"
+    },
+    "Quote": "ibanfirst:Quote",
+    "notificationContent": "ibanfirst:notificationContent",
+    "payload": {
+      "@id": "ibanfirst:payload"
+    },
+    "eventType": {
+      "@id": "ibanfirst:eventType",
+      "@type": "xsd:string"
+    },
+    "webhookId": {
+      "@id": "ibanfirst:webhookId",
+      "@type": "@id"
+    },
+    "webhookFailedNotification": "ibanfirst:webhookFailedNotification",
+    "httpStatusCode": {
+      "@id": "ibanfirst:httpStatusCode",
+      "@type": "xsd:string"
+    },
+    "failedAt": {
+      "@id": "ibanfirst:failedAt",
+      "@type": "xsd:string"
+    },
+    "retryCount": {
+      "@id": "ibanfirst:retryCount",
+      "@type": "xsd:integer"
+    },
+    "Webhook": "ibanfirst:Webhook",
+    "events": {
+      "@id": "ibanfirst:events",
+      "@container": "@list"
+    },
+    "url": {
+      "@id": "ibanfirst:url",
+      "@type": "@id"
+    }
+  },
+  "@type": "schema:Dataset",
+  "schema:name": "iBanFirst API JSON-LD context",
+  "schema:description": "A JSON-LD @context for the objects iBanFirst's own API contract declares: one class per component schema, one property per declared field, typed from the contract. Derived by script (derive-json-ld.py, 2026-10-12) from openapi/ibanfirst-accounts-api-openapi.yml, openapi/ibanfirst-beneficiaries-api-openapi.yml, openapi/ibanfirst-documents-api-openapi.yml.",
+  "dcterms:created": "2026-10-12",
+  "dcterms:source": [
+    "openapi/ibanfirst-accounts-api-openapi.yml",
+    "openapi/ibanfirst-beneficiaries-api-openapi.yml",
+    "openapi/ibanfirst-documents-api-openapi.yml",
+    "openapi/ibanfirst-financial-movements-api-openapi.yml",
+    "openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml"
+  ]
+}

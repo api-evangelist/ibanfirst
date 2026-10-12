@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-quote-ref-schema.json",
+  "title": "quoteRef",
+  "description": "A String representing the unique ID of the quote.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/quoteRef",
+  "type": "string",
+  "pattern": "^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$",
+  "format": "^ui[0-9]{4}-[0-9]{5}-[0-9]{13}$"
+}

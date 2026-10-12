@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-payment-option-schema.json",
+  "title": "PaymentOption",
+  "description": "The representation of a payment option object. This object contains information about priorityPaymentOption and feePaymentOption for a payment.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/PaymentOption",
+  "type": "object",
+  "properties": {
+    "paymentOption": {
+      "type": "object",
+      "properties": {
+        "externalBankAccountId": {
+          "$ref": "#/$defs/ID"
+        },
+        "sourceWalletId": {
+          "$ref": "#/$defs/ID"
+        },
+        "options": {
+          "description": "An array containing all priorityPaymentOptions for the payment, and then, all the feePaymentOptions for this priorityPaymentOptions\n",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "priorityPaymentOption": {
+                "$ref": "#/$defs/paymentSpeedOption"
+              },
+              "feePaymentOption": {
+                "description": "The fee option",
+                "type": "string",
+                "enum": [
+                  "BEN",
+                  "OUR",
+                  "SHARE",
+                  "SEPA",
+                  "DSP",
+                  "RTGS"
+                ]
+              },
+              "priorityCost": {
+                "$ref": "#/$defs/Amount"
+              },
+              "feeCost": {
+                "$ref": "#/$defs/Amount"
+              },
+              "minimumAmountSource": {
+                "$ref": "#/$defs/Amount"
+              },
+              "minimumAmountTarget": {
+                "$ref": "#/$defs/Amount"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Amount": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Representation of an amount.\n",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        }
+      }
+    },
+    "Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "format": "^[A-Z]{3}$",
+      "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n"
+    },
+    "ID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "format": "^[A-Za-z0-9]+$",
+      "description": "A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.\n"
+    },
+    "QuotedDecimal": {
+      "type": "string",
+      "pattern": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "format": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "description": "A String representing a formatted floating number.\n"
+    },
+    "paymentSpeedOption": {
+      "description": "A code representing the speed option.\n",
+      "type": "string",
+      "enum": [
+        "48H",
+        "24H",
+        "1H",
+        "instant"
+      ]
+    }
+  }
+}

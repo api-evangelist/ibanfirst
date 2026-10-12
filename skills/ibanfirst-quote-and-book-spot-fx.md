@@ -1,24 +1,22 @@
 ---
-name: Quote and book a spot FX trade with iBanFirst
-description: >-
-  Request a spot FX quote, book the trade against it, and reconcile the settlement legs — including
+name: ibanfirst-quote-and-book-spot-fx
+description: Request a spot FX quote, book the trade against it, and reconcile the settlement legs — including
   how to read the client margin out of the Rate object and why a quote must not be retried blindly.
 api: openapi/ibanfirst-clientapi-openapi.yml
 api_version: 1.6.0
 base_url: https://api.ibanfirst.com/api
 test_base_url: https://api-demo.ibanfirst.com/api
 operations:
-  - 'GET /wallets'
-  - 'POST /quotes'
-  - 'POST /trades'
-  - 'GET /trades/{id}'
-  - 'GET /trades/_{status}'
-  - 'GET /logs/{nonce}'
+- getWallets
+- postQuotes
+- postTrades
+- getTradesById
+- getTrades{status}
+- getLogsByNonce
 generated: '2026-08-17'
 method: generated
-source: >-
-  openapi/ibanfirst-clientapi-openapi.yml, data-model/ibanfirst-data-model.yml,
-  conventions/ibanfirst-conventions.yml
+source: openapi/ibanfirst-clientapi-openapi.yml, data-model/ibanfirst-data-model.yml, conventions/ibanfirst-conventions.yml
+title: Quote and book a spot FX trade with iBanFirst
 ---
 
 # Quote and book a spot FX trade with iBanFirst

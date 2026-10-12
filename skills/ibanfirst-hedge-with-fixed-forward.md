@@ -1,23 +1,21 @@
 ---
-name: Hedge currency risk with an iBanFirst fixed forward payment contract
-description: >-
-  Quote and book a fixed forward payment contract to lock a rate for a future settlement date,
+name: ibanfirst-hedge-with-fixed-forward
+description: Quote and book a fixed forward payment contract to lock a rate for a future settlement date,
   respecting the quote expiry and the published initial-collateral schedule.
 api: openapi/ibanfirst-clientapi-openapi.yml
 api_version: 1.6.0
 base_url: https://api.ibanfirst.com/api
 test_base_url: https://api-demo.ibanfirst.com/api
 operations:
-  - 'GET /wallets'
-  - 'POST /fixed-forwards/quote'
-  - 'POST /fixed-forwards'
-  - 'GET /fixed-forwards'
-  - 'GET /fixed-forwards/{fixedForwardId}'
+- getWallets
+- postFixedForwardsQuote
+- postFixedForwards
+- getFixedForwards
+- getFixedForwardsByFixedForwardId
 generated: '2026-08-17'
 method: generated
-source: >-
-  openapi/ibanfirst-clientapi-openapi.yml, plans/ibanfirst-plans-pricing.yml,
-  data-model/ibanfirst-data-model.yml
+source: openapi/ibanfirst-clientapi-openapi.yml, plans/ibanfirst-plans-pricing.yml, data-model/ibanfirst-data-model.yml
+title: Hedge currency risk with an iBanFirst fixed forward payment contract
 ---
 
 # Hedge currency risk with an iBanFirst fixed forward payment contract

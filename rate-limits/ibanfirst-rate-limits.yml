@@ -1,6 +1,7 @@
 generated: '2026-08-17'
 method: searched
 source: https://docs.ibanfirst.com/api/clientapi
+name: iBanFirst API Rate Limits
 limit_count: 0
 documented: false
 note: >-

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-currency-schema.json",
+  "title": "Currency",
+  "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-accounts-api-openapi.yml#/components/schemas/Currency",
+  "type": "string",
+  "pattern": "^[A-Z]{3}$",
+  "format": "^[A-Z]{3}$"
+}

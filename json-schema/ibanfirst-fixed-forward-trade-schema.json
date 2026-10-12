@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-fixed-forward-trade-schema.json",
+  "title": "FixedForwardTrade",
+  "description": "Representation of a fixed forward payment contract.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-fixed-forward-payment-contract-api-openapi.yml#/components/schemas/FixedForwardTrade",
+  "type": "object",
+  "properties": {
+    "fixedForwardId": {
+      "$ref": "#/$defs/ID"
+    },
+    "appliedRate": {
+      "$ref": "#/$defs/QuotedDecimal"
+    },
+    "currencyPair": {
+      "$ref": "#/$defs/CurrencyPair"
+    },
+    "sourceAmount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "deliveredAmount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "createdDate": {
+      "$ref": "#/$defs/Datetime"
+    },
+    "deliveryDate": {
+      "$ref": "#/$defs/Date"
+    },
+    "status": {
+      "description": "The status of the fixed forward payment contract.",
+      "type": "string",
+      "enum": [
+        "planified",
+        "finalized",
+        "canceled"
+      ]
+    },
+    "side": {
+      "type": "string",
+      "description": "The side representing the quote. `S` to sell and `B` to buy.",
+      "enum": [
+        "B",
+        "S"
+      ]
+    },
+    "sourceAccountId": {
+      "$ref": "#/$defs/ID"
+    },
+    "deliveryAccountId": {
+      "$ref": "#/$defs/ID"
+    }
+  },
+  "$defs": {
+    "Amount": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Representation of an amount.\n",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        }
+      }
+    },
+    "Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "format": "^[A-Z]{3}$",
+      "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n"
+    },
+    "CurrencyPair": {
+      "type": "string",
+      "pattern": "^[A-Z]{6}$",
+      "format": "^[A-Z]{6}$",
+      "description": "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "format": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "description": "A String representing a date by its year, month and day in month.\n    \n"
+    },
+    "Datetime": {
+      "type": "string",
+      "pattern": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "format": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "description": "A String representing a date by its year, month, day in month, hour, minute and second.\n"
+    },
+    "ID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "format": "^[A-Za-z0-9]+$",
+      "description": "A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.\n"
+    },
+    "QuotedDecimal": {
+      "type": "string",
+      "pattern": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "format": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "description": "A String representing a formatted floating number.\n"
+    }
+  }
+}

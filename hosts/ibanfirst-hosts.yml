@@ -1,0 +1,157 @@
+generated: '2026-10-12'
+method: derived
+source: the pre-flight dossier, apis.yml pointers, spec servers, well-known, vendors -- nothing fetched here
+generator: derive-hosts.py
+summary:
+  hosts: 12
+  own: 10
+  other_domain: 0
+  platform: 2
+  roles:
+  - api
+  - collections
+  - identity
+  - marketing
+  - other
+  - portal
+  - source
+  - support
+  - website
+hosts:
+- host: api.ibanfirst.com
+  found_by:
+  - apis[]
+  types: []
+  serves:
+  - api
+  registrable_domain: ibanfirst.com
+  role: api
+  relation: own
+- host: blog.ibanfirst.com
+  found_by:
+  - pointer
+  types:
+  - Blog
+  serves: []
+  registrable_domain: ibanfirst.com
+  role: marketing
+  relation: own
+- host: docs.ibanfirst.com
+  found_by:
+  - pointer
+  - apis[]
+  - vendor-detect
+  types:
+  - DeveloperPortal
+  - Documentation
+  - APIReference
+  - GettingStarted
+  - ChangeLog
+  serves:
+  - docs
+  - cdn
+  vendor: cloudfront
+  registrable_domain: ibanfirst.com
+  role: portal
+  relation: own
+- host: github.com
+  found_by:
+  - pointer
+  types:
+  - GitHubOrganization
+  serves: []
+  registrable_domain: github.com
+  role: source
+  relation: platform
+- host: ibanfirst.com
+  found_by:
+  - pointer
+  - apis[]
+  types:
+  - Newsroom
+  - Pricing
+  - TermsOfService
+  - PrivacyPolicy
+  - Security
+  - Compliance
+  serves:
+  - docs
+  registrable_domain: ibanfirst.com
+  role: marketing
+  relation: own
+- host: info.ibanfirst.com
+  found_by:
+  - pointer
+  - vendor-detect
+  types:
+  - SignUp
+  serves:
+  - hosting
+  vendor: hubspot
+  registrable_domain: ibanfirst.com
+  role: identity
+  relation: own
+- host: mcp.ibanfirst.com
+  found_by:
+  - apis[]
+  types: []
+  serves:
+  - api
+  registrable_domain: ibanfirst.com
+  role: other
+  relation: own
+- host: open-api-sdbx.ibanfirst.com
+  found_by:
+  - apis[]
+  types: []
+  serves:
+  - api
+  registrable_domain: ibanfirst.com
+  role: other
+  relation: own
+- host: platform.ibanfirst.com
+  found_by:
+  - pointer
+  types:
+  - Login
+  serves: []
+  registrable_domain: ibanfirst.com
+  role: identity
+  relation: own
+- host: support.ibanfirst.com
+  found_by:
+  - pointer
+  - vendor-detect
+  types:
+  - Support
+  serves:
+  - cdn
+  vendor: cloudflare
+  registrable_domain: ibanfirst.com
+  role: support
+  relation: own
+- host: www.ibanfirst.com
+  found_by:
+  - pointer
+  - vendor-detect
+  types:
+  - Website
+  - LLMsTxt
+  serves:
+  - hosting
+  vendor: vercel
+  registrable_domain: ibanfirst.com
+  role: website
+  relation: own
+- host: www.postman.com
+  found_by:
+  - pointer
+  - vendor-detect
+  types:
+  - Postman
+  serves:
+  - api-collections
+  vendor: postman
+  registrable_domain: postman.com
+  role: collections
+  relation: platform

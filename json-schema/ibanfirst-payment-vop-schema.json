@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-payment-vop-schema.json",
+  "title": "PaymentVOP",
+  "description": "Representation of a payment.\n",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-payments-api-openapi.yml#/components/schemas/PaymentVOP",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ID"
+    },
+    "status": {
+      "type": "string",
+      "description": "The code identifying the payment status.\n",
+      "enum": [
+        "planified",
+        "rejected",
+        "finalized",
+        "canceled",
+        "refused",
+        "blocked",
+        "awaitingconfirmation",
+        "waitingsignature",
+        "processing"
+      ]
+    },
+    "createdDate": {
+      "$ref": "#/$defs/Datetime"
+    },
+    "desiredExecutionDate": {
+      "$ref": "#/$defs/Date"
+    },
+    "executionDate": {
+      "$ref": "#/$defs/Date"
+    },
+    "amount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "counterValue": {
+      "$ref": "#/$defs/Amount"
+    },
+    "rate": {
+      "$ref": "#/$defs/Rate"
+    },
+    "tag": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "The custom reference related to the payment. (For internal use only, not communicated to the beneficiary).\n"
+    },
+    "externalBankAccountId": {
+      "$ref": "#/$defs/ID"
+    },
+    "sourceWalletId": {
+      "$ref": "#/$defs/ID"
+    },
+    "communication": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "The wording of the payment.\n"
+    },
+    "priorityPaymentOption": {
+      "$ref": "#/$defs/paymentPriorityOption"
+    },
+    "feePaymentOption": {
+      "type": "string",
+      "description": "The code identifying the charges option for this payment.\n",
+      "enum": [
+        "BEN",
+        "OUR",
+        "SHARE",
+        "SEPA",
+        "DSP",
+        "RTGS"
+      ]
+    },
+    "speedOption": {
+      "$ref": "#/$defs/paymentSpeedOption"
+    },
+    "feePaymentAmount": {
+      "$ref": "#/$defs/Amount"
+    },
+    "tracker": {
+      "type": "string",
+      "description": "Payment tracker link. For SWIFT payment only. Not available for payments pending confirmation or signature. "
+    },
+    "payeeVerification": {
+      "type": "object",
+      "description": "Verification of payee result. \n\n **Note** : check default error response if the verification failed for more details.\n",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "`SUCCESS` if the beneficiary IBAN and name are verified."
+        },
+        "message": {
+          "type": "string",
+          "description": "`Match` if the beneficiary IBAN and name are a perfect match."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "Amount": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Representation of an amount.\n",
+      "required": [
+        "value",
+        "currency"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        }
+      }
+    },
+    "Currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "format": "^[A-Z]{3}$",
+      "description": "A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n"
+    },
+    "CurrencyPair": {
+      "type": "string",
+      "pattern": "^[A-Z]{6}$",
+      "format": "^[A-Z]{6}$",
+      "description": "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "format": "^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}$",
+      "description": "A String representing a date by its year, month and day in month.\n    \n"
+    },
+    "Datetime": {
+      "type": "string",
+      "pattern": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "format": "^((19[0,99]|2[0-9]{3})\\-(0[1-9]|1[012])\\-([012][0-9]|3[01])\\ ([01][0-9]|2[0-3])\\:([0-5][0-9])\\:([0-5][0-9]))$",
+      "description": "A String representing a date by its year, month, day in month, hour, minute and second.\n"
+    },
+    "ID": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+$",
+      "format": "^[A-Za-z0-9]+$",
+      "description": "A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.\n"
+    },
+    "QuotedDecimal": {
+      "type": "string",
+      "pattern": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "format": "^((\\-)?)[0-9]{12}((\\.[0-9]{1,7})?)$",
+      "description": "A String representing a formatted floating number.\n"
+    },
+    "Rate": {
+      "type": "object",
+      "description": "Representation of a Rate.\n",
+      "properties": {
+        "currencyPair": {
+          "$ref": "#/$defs/CurrencyPair"
+        },
+        "midMarket": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "date": {
+          "$ref": "#/$defs/Datetime"
+        },
+        "coreAsk": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "coreBid": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "appliedAsk": {
+          "$ref": "#/$defs/QuotedDecimal"
+        },
+        "appliedBid": {
+          "$ref": "#/$defs/QuotedDecimal"
+        }
+      }
+    },
+    "paymentPriorityOption": {
+      "description": "A code representing whether this payment has a standard priority, or a priority treatment.\n",
+      "type": "string",
+      "enum": [
+        "normal",
+        "urgent"
+      ]
+    },
+    "paymentSpeedOption": {
+      "description": "A code representing the speed option.\n",
+      "type": "string",
+      "enum": [
+        "48H",
+        "24H",
+        "1H",
+        "instant"
+      ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/api-evangelist/ibanfirst/main/json-schema/ibanfirst-webhook-failed-notification-schema.json",
+  "title": "webhookFailedNotification",
+  "x-generated": "2026-10-12",
+  "x-method": "derived",
+  "x-generator": "derive-json-schema.py",
+  "x-source": "openapi/ibanfirst-webhook-subscriptions-api-openapi.yml#/components/schemas/webhookFailedNotification",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique ID of a notification",
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+    },
+    "notificationContent": {
+      "$ref": "#/$defs/notificationContent"
+    },
+    "errorMessage": {
+      "description": "",
+      "type": "string"
+    },
+    "httpStatusCode": {
+      "description": "",
+      "type": "string"
+    },
+    "failedAt": {
+      "type": "string",
+      "pattern": "",
+      "description": ""
+    },
+    "retryCount": {
+      "description": "",
+      "type": "integer"
+    }
+  },
+  "$defs": {
+    "notificationContent": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "description": "Content of the notification, see get payment details, get trade details"
+        },
+        "eventType": {
+          "type": "string",
+          "description": "Event that triggered the notification."
+        },
+        "webhookId": {
+          "$ref": "#/$defs/webhookId"
+        }
+      }
+    },
+    "webhookId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$",
+      "description": "ID of the webhook subscription.\n"
+    }
+  }
+}
