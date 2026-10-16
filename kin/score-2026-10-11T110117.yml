@@ -1,34 +1,32 @@
-# Kin Score artifact — ibanfirst — 2026-09-06T011047
+# Kin Score artifact — ibanfirst — 2026-10-11T110117
 # The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
 ---
 kin_score:
   slug: ibanfirst
-  schema_version: 0.18.3
-  scored_at: '2026-09-06'
-  run_ts: 2026-09-06T011047
-  composite: 59.5
+  schema_version: 0.23.0
+  scored_at: '2026-10-11'
+  run_ts: 2026-10-11T110117
+  composite: 57.1
   band: strong
   facets:
-    discoverability: 75.9
-    contract_quality: 57.5
-    governance: 18.2
+    discoverability: 75.0
+    contract_quality: 55.1
+    contract_governance: 18.2
     operational_transparency: 36.8
     developer_ergonomics: 68.5
-    commercial_clarity: 73.7
-    contract_governance: 18.2
     access_clarity: 73.7
   agent_readiness:
-    score: 50.0
+    score: 53.0
     band: agent-ready
     band_gated_from: agent-native
     dimensions:
       spec_presence: true
       agentic_access: false
       reversibility_documented: documented
-      mcp_server: documented
+      mcp_server: verified
       auth_clarity: served
       idempotency: false
-      error_semantics: documented
+      error_semantics: derived
       openapi_examples: partial
       rate_limit_signal: documented
       event_surface_described: true
@@ -45,7 +43,7 @@ kin_score:
     applies: true
     regime: Banking & Open Finance
     regime_id: banking_open_finance
-    score: 45.6
+    score: 28.3
     matched_via: tags
   provenance:
     mcp: first-party

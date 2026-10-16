@@ -2,22 +2,21 @@
   "repo": "ibanfirst",
   "feeds": [
     {
-      "source": "https://support.ibanfirst.com/en/",
-      "feed_url": "https://support.ibanfirst.com/en/feed.xml",
+      "source": "https://blog.ibanfirst.com/en",
+      "feed_url": "https://blog.ibanfirst.com/en/rss.xml",
       "title": "",
-      "saved": 0,
+      "saved": 1,
       "method": "discovered"
     },
     {
       "source": "https://support.ibanfirst.com/en/feed.xml",
-      "feed_url": "https://support.ibanfirst.com/en/feed.xml",
-      "title": "",
+      "feed_url": "",
       "saved": 0,
-      "method": "feed"
+      "skipped": "community-shaped; a vendor feed already saved this run (roadmap#239)"
     }
   ],
-  "post_count": 31,
-  "fetched": "2026-10-03T12:30:02Z",
+  "post_count": 32,
+  "fetched": "2026-10-10T13:15:00Z",
   "feed_nature": "undetermined",
   "feed_nature_basis": null,
   "feed_nature_note": "Whether these posts are the vendor publishing or its support community, decided on the URL path grammar of the saved posts -- not the hostname, which carries both on Khoros, and not author diversity, which flags large vendor blogs as forums. 'undetermined' means undetermined."
