@@ -183,21 +183,47 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Amount:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of an amount.
+    Error:
+      type: object
+      description: 'Representation of an error.
 
         '
-      required:
-      - value
-      - currency
       properties:
-        value:
-          $ref: '#/components/schemas/QuotedDecimal'
-        currency:
-          $ref: '#/components/schemas/Currency'
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+
+        '
     ID:
       type: string
       pattern: ^[A-Za-z0-9]+$
@@ -206,6 +232,12 @@ components:
       description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
 
         '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
     FinancialMovement:
       type: object
       description: 'Representation of a financial movement
@@ -285,39 +317,6 @@ components:
           description: 'Description of the financial movement.
 
             '
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
     QuotedDecimal:
       type: string
       pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
@@ -326,20 +325,21 @@ components:
       description: 'A String representing a formatted floating number.
 
         '
-    Date:
-      type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
-    Datetime:
-      type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+    Amount:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of an amount.
 
         '
+      required:
+      - value
+      - currency
+      properties:
+        value:
+          $ref: '#/components/schemas/QuotedDecimal'
+        currency:
+          $ref: '#/components/schemas/Currency'
   securitySchemes:
     X-WSSE:
       type: apiKey

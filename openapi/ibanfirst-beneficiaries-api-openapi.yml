@@ -264,6 +264,199 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    ExternalBankAccount:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          description: 'The three-digit code specifying the currency of the account.
+
+            '
+          type: string
+        tag:
+          type: string
+          maxLength: 50
+          description: 'Custom reference of the account.
+
+            '
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: 'The code specifying the account (can be either an Iban or an account number).
+
+            '
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
+        contactEmail:
+          $ref: '#/components/schemas/Email'
+    Error:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    ErrorVOP:
+      type: object
+      description: 'Representation of an error.
+
+        '
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: 'Error description. '
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+        payeeVerification:
+          type: object
+          description: ''
+          properties:
+            status:
+              type: string
+              enum:
+              - PARTIAL
+              - FAILED
+              description: ''
+            message:
+              type: string
+              description: Verification of payee result details.
+            corrections:
+              type: object
+              description: Proposed modification regarding the beneficiary information.
+              properties:
+                account_holder_name:
+                  type: string
+                  description: Expected beneficiary name.
+                account_holder_type:
+                  type: string
+                  enum:
+                  - Individual
+                  - Corporate
+                  description: Expected beneficiary type.
+    Address:
+      type: object
+      description: 'Representation of an address
+
+        '
+      required:
+      - country
+      properties:
+        street:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+          description: 'The street and street number for the address described.
+
+            '
+        postCode:
+          type:
+          - string
+          - 'null'
+          maxLength: 15
+          description: 'The ZIP/Post code for the address described.
+
+            '
+        city:
+          type:
+          - string
+          - 'null'
+          maxLength: 35
+          description: 'The city for the address described.
+
+            '
+        province:
+          type:
+          - string
+          - 'null'
+          maxLength: 2
+          description: 'The province code for the address described. This field could be required if the country use a province system, like United States or Canada. To see a full list of province code, please refer to http://www.mapability.com/ei8ic/contest/states.php.
+
+            '
+        country:
+          type: string
+          maxLength: 8
+          description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
+
+            '
+    ProcessResult:
+      type: object
+      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
+
+        '
+      properties:
+        result:
+          type: boolean
+          description: 'The result of the operation. `true` if the operation is successful, else `false`
+
+            '
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
+
+        '
+    CorrespondantBank:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of a correspondant bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            '
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
     ID:
       type: string
       pattern: ^[A-Za-z0-9]+$
@@ -340,173 +533,6 @@ components:
             message:
               type: string
               description: '`Match` if the beneficiary IBAN and name are a perfect match.'
-    Email:
-      type: string
-      description: Beneficiary email address
-      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
-    Address:
-      type: object
-      description: 'Representation of an address
-
-        '
-      required:
-      - country
-      properties:
-        street:
-          type:
-          - string
-          - 'null'
-          maxLength: 255
-          description: 'The street and street number for the address described.
-
-            '
-        postCode:
-          type:
-          - string
-          - 'null'
-          maxLength: 15
-          description: 'The ZIP/Post code for the address described.
-
-            '
-        city:
-          type:
-          - string
-          - 'null'
-          maxLength: 35
-          description: 'The city for the address described.
-
-            '
-        province:
-          type:
-          - string
-          - 'null'
-          maxLength: 2
-          description: 'The province code for the address described. This field could be required if the country use a province system, like United States or Canada. To see a full list of province code, please refer to http://www.mapability.com/ei8ic/contest/states.php.
-
-            '
-        country:
-          type: string
-          maxLength: 8
-          description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
-
-            '
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
-    ProcessResult:
-      type: object
-      description: 'As some of our process just need to send you back the confirmation that this process is successful, the API will send you a ProcessResult.
-
-        '
-      properties:
-        result:
-          type: boolean
-          description: 'The result of the operation. `true` if the operation is successful, else `false`
-
-            '
-    ErrorVOP:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: 'Error description. '
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-        payeeVerification:
-          type: object
-          description: ''
-          properties:
-            status:
-              type: string
-              enum:
-              - PARTIAL
-              - FAILED
-              description: ''
-            message:
-              type: string
-              description: Verification of payee result details.
-            corrections:
-              type: object
-              description: Proposed modification regarding the beneficiary information.
-              properties:
-                account_holder_name:
-                  type: string
-                  description: Expected beneficiary name.
-                account_holder_type:
-                  type: string
-                  enum:
-                  - Individual
-                  - Corporate
-                  description: Expected beneficiary type.
-    CorrespondantBank:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of a correspondant bank.
-
-        '
-      properties:
-        bic:
-          type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
-
-            '
-        name:
-          type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
-
-            '
-        address:
-          $ref: '#/components/schemas/Address'
     HolderBank:
       type: object
       description: 'Representation of a beneficiary bank.
@@ -539,36 +565,10 @@ components:
             '
         address:
           $ref: '#/components/schemas/Address'
-    ExternalBankAccount:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          description: 'The three-digit code specifying the currency of the account.
-
-            '
-          type: string
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference of the account.
-
-            '
-        accountNumber:
-          type: string
-          maxLength: 40
-          description: 'The code specifying the account (can be either an Iban or an account number).
-
-            '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-        contactEmail:
-          $ref: '#/components/schemas/Email'
+    Email:
+      type: string
+      description: Beneficiary email address
+      pattern: ^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+\.[A-Za-z]{2,}$
   securitySchemes:
     X-WSSE:
       type: apiKey

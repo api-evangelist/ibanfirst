@@ -213,94 +213,31 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
-
-        '
-    Holder:
+    Error:
       type: object
-      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
-
-        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
-
-
-        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
-
-        '
-      required:
-      - name
-      - type
-      properties:
-        name:
-          type: string
-          maxLength: 100
-          description: 'The name of the account owner.
-
-            '
-        type:
-          type: string
-          maxLength: 10
-          description: 'The code identifying the type of account owner.
-
-            '
-          enum:
-          - Individual
-          - Corporate
-        address:
-          $ref: '#/components/schemas/Address'
-    Wallet:
-      type: object
-      description: 'Representation of a Wallet
+      description: 'Representation of an error.
 
         '
       properties:
-        id:
-          $ref: '#/components/schemas/ID'
-        currency:
-          $ref: '#/components/schemas/Currency'
-        tag:
-          type: string
-          maxLength: 50
-          description: 'Custom reference associated to this wallet. (For internal use only, not communicated to any beneficiary).
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
 
             '
-        status:
+        errorType:
           type: string
-          description: 'The code identifying the status of the account.
+          description: 'A short description identifying a general category for the error that occurred.
 
             '
-          enum:
-          - authorized
-          - locked
-          - not authorized
-        accountNumber:
+        errorMessage:
           type: string
-          maxLength: 40
-          description: 'Iban or account number.
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
-        correspondentBank:
-          $ref: '#/components/schemas/CorrespondantBank'
-        holderBank:
-          $ref: '#/components/schemas/HolderBank'
-        holder:
-          $ref: '#/components/schemas/Holder'
-    Balance:
-      type: object
-      description: 'Representation of a balance.
-
-        '
-      properties:
-        closingDate:
-          $ref: '#/components/schemas/Date'
-        bookingAmount:
-          $ref: '#/components/schemas/Amount'
-        valueAmount:
-          $ref: '#/components/schemas/Amount'
     Address:
       type: object
       description: 'Representation of an address
@@ -347,31 +284,6 @@ components:
           description: 'The two-letters abbreviation for the country, following the ISO-3166 for the address described.
 
             '
-    Error:
-      type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
     Currency:
       type: string
       pattern: ^[A-Z]{3}$
@@ -380,6 +292,85 @@ components:
       description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
 
         '
+    CorrespondantBank:
+      type:
+      - object
+      - 'null'
+      description: 'Representation of a correspondant bank.
+
+        '
+      properties:
+        bic:
+          type: string
+          maxLength: 11
+          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+
+            '
+        name:
+          type: string
+          maxLength: 120
+          description: 'The beneficiary bank name.
+
+            '
+        address:
+          $ref: '#/components/schemas/Address'
+    Balance:
+      type: object
+      description: 'Representation of a balance.
+
+        '
+      properties:
+        closingDate:
+          $ref: '#/components/schemas/Date'
+        bookingAmount:
+          $ref: '#/components/schemas/Amount'
+        valueAmount:
+          $ref: '#/components/schemas/Amount'
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
+    Holder:
+      type: object
+      description: 'What we call a Holder can be either an Individual or an Organisation that own the account.
+
+        May also be referred to as: Beneficiary/Supplier/Vendor/Payee/Recipient.
+
+
+        In the beneficiary address, only the Country is mandatory, but you can specify all fields to be more precise.
+
+        '
+      required:
+      - name
+      - type
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          description: 'The name of the account owner.
+
+            '
+        type:
+          type: string
+          maxLength: 10
+          description: 'The code identifying the type of account owner.
+
+            '
+          enum:
+          - Individual
+          - Corporate
+        address:
+          $ref: '#/components/schemas/Address'
     HolderBank:
       type: object
       description: 'Representation of a beneficiary bank.
@@ -412,28 +403,43 @@ components:
             '
         address:
           $ref: '#/components/schemas/Address'
-    CorrespondantBank:
-      type:
-      - object
-      - 'null'
-      description: 'Representation of a correspondant bank.
+    Wallet:
+      type: object
+      description: 'Representation of a Wallet
 
         '
       properties:
-        bic:
+        id:
+          $ref: '#/components/schemas/ID'
+        currency:
+          $ref: '#/components/schemas/Currency'
+        tag:
           type: string
-          maxLength: 11
-          description: 'Eight or eleven-digit ISO 9362 Business Identifier Code specifying the Recipient Bank.
+          maxLength: 50
+          description: 'Custom reference associated to this wallet. (For internal use only, not communicated to any beneficiary).
 
             '
-        name:
+        status:
           type: string
-          maxLength: 120
-          description: 'The beneficiary bank name.
+          description: 'The code identifying the status of the account.
 
             '
-        address:
-          $ref: '#/components/schemas/Address'
+          enum:
+          - authorized
+          - locked
+          - not authorized
+        accountNumber:
+          type: string
+          maxLength: 40
+          description: 'Iban or account number.
+
+            '
+        correspondentBank:
+          $ref: '#/components/schemas/CorrespondantBank'
+        holderBank:
+          $ref: '#/components/schemas/HolderBank'
+        holder:
+          $ref: '#/components/schemas/Holder'
     QuotedDecimal:
       type: string
       pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
@@ -442,12 +448,6 @@ components:
       description: 'A String representing a formatted floating number.
 
         '
-    Date:
-      type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
     Amount:
       type:
       - object

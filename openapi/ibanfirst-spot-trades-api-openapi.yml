@@ -218,17 +218,34 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    ID:
-      type: string
-      pattern: ^[A-Za-z0-9]+$
-      format: ^[A-Za-z0-9]+$
-      example: Na5Dv6E
-      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+    Error:
+      type: object
+      description: 'Representation of an error.
 
         '
-    Trade:
+      properties:
+        errorCode:
+          type: number
+          format: int
+          description: 'The code referring the error.
+
+            '
+        errorType:
+          type: string
+          description: 'A short description identifying a general category for the error that occurred.
+
+            '
+        errorMessage:
+          type: string
+          description: Error description.
+        link:
+          type: string
+          description: 'An hyperlink to access the page that describes more accurately the error.
+
+            '
+    Quote:
       type: object
-      description: 'Representation of a Trade.
+      description: 'Representation of a quote.
 
         '
       properties:
@@ -246,12 +263,22 @@ components:
           $ref: '#/components/schemas/Datetime'
         deliveryDate:
           $ref: '#/components/schemas/Date'
-        tag:
-          type: string
-          maxLength: 76
-          description: 'A custom wording for the trade.
+    Currency:
+      type: string
+      pattern: ^[A-Z]{3}$
+      format: ^[A-Z]{3}$
+      example: USD
+      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
 
-            '
+        '
+    Datetime:
+      type: string
+      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
+      example: '2016-01-01 00:00:00'
+      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
+
+        '
     TradeReconciliation:
       type: object
       description: 'Representation of a Trade.
@@ -308,58 +335,23 @@ components:
           $ref: '#/components/schemas/Datetime'
         deliveryDate:
           $ref: '#/components/schemas/Date'
-    Error:
+    ID:
+      type: string
+      pattern: ^[A-Za-z0-9]+$
+      format: ^[A-Za-z0-9]+$
+      example: Na5Dv6E
+      description: 'A String representing the id of an object. This string contains alpha-numeric characters, including the capital ones.
+
+        '
+    Date:
+      type: string
+      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
+      example: '2016-01-01'
+      description: "A String representing a date by its year, month and day in month.\n    \n"
+    Trade:
       type: object
-      description: 'Representation of an error.
-
-        '
-      properties:
-        errorCode:
-          type: number
-          format: int
-          description: 'The code referring the error.
-
-            '
-        errorType:
-          type: string
-          description: 'A short description identifying a general category for the error that occurred.
-
-            '
-        errorMessage:
-          type: string
-          description: Error description.
-        link:
-          type: string
-          description: 'An hyperlink to access the page that describes more accurately the error.
-
-            '
-    Currency:
-      type: string
-      pattern: ^[A-Z]{3}$
-      format: ^[A-Z]{3}$
-      example: USD
-      description: 'A String representing the Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.
-
-        '
-    Datetime:
-      type: string
-      pattern: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      format: ^((19[0,99]|2[0-9]{3})\-(0[1-9]|1[012])\-([012][0-9]|3[01])\ ([01][0-9]|2[0-3])\:([0-5][0-9])\:([0-5][0-9]))$
-      example: '2016-01-01 00:00:00'
-      description: 'A String representing a date by its year, month, day in month, hour, minute and second.
-
-        '
-    QuotedDecimal:
-      type: string
-      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
-      example: '2.257'
-      description: 'A String representing a formatted floating number.
-
-        '
-    Quote:
-      type: object
-      description: 'Representation of a quote.
+      description: 'Representation of a Trade.
 
         '
       properties:
@@ -377,12 +369,26 @@ components:
           $ref: '#/components/schemas/Datetime'
         deliveryDate:
           $ref: '#/components/schemas/Date'
+        tag:
+          type: string
+          maxLength: 76
+          description: 'A custom wording for the trade.
+
+            '
     CurrencyPair:
       type: string
       pattern: ^[A-Z]{6}$
       format: ^[A-Z]{6}$
       example: EURUSD
       description: "A String representing two concatenated Three-digit ISO 4217 Currency Code of a currency. This String only contains capitalized letters.\n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n    \n"
+    QuotedDecimal:
+      type: string
+      pattern: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      format: ^((\-)?)[0-9]{12}((\.[0-9]{1,7})?)$
+      example: '2.257'
+      description: 'A String representing a formatted floating number.
+
+        '
     Rate:
       type: object
       description: 'Representation of a Rate.
@@ -403,12 +409,6 @@ components:
           $ref: '#/components/schemas/QuotedDecimal'
         appliedBid:
           $ref: '#/components/schemas/QuotedDecimal'
-    Date:
-      type: string
-      pattern: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      format: ^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$
-      example: '2016-01-01'
-      description: "A String representing a date by its year, month and day in month.\n    \n"
     Amount:
       type:
       - object

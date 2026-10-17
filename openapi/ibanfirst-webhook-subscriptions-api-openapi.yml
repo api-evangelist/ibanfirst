@@ -327,13 +327,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    url:
-      type: string
-      description: 'Notifications are sent to this url.
-
-        '
-      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
-      example: https:\www.notification.com
     Error:
       type: object
       description: 'Representation of an error.
@@ -359,16 +352,13 @@ components:
           description: 'An hyperlink to access the page that describes more accurately the error.
 
             '
-    notificationContent:
-      type: object
-      properties:
-        payload:
-          description: Content of the notification, see get payment details, get trade details
-        eventType:
-          type: string
-          description: Event that triggered the notification.
-        webhookId:
-          $ref: '#/components/schemas/webhookId'
+    url:
+      type: string
+      description: 'Notifications are sent to this url.
+
+        '
+      pattern: ^(https?:\/\/)[^\s/$.?#].[^\s]*$
+      example: https:\www.notification.com
     webhookFailedNotification:
       type: object
       properties:
@@ -410,13 +400,6 @@ components:
             $ref: '#/components/schemas/events'
         url:
           $ref: '#/components/schemas/url'
-    webhookId:
-      type: string
-      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
-      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
-      description: 'ID of the webhook subscription.
-
-        '
     events:
       type: array
       items:
@@ -435,6 +418,23 @@ components:
         - TRADE_FINALIZED
         - TRADE_CANCELED
         - TRADE_BLOCKED
+    webhookId:
+      type: string
+      pattern: ^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$
+      example: cf16243d-7e0a-4a5b-b996-ba7018201e30
+      description: 'ID of the webhook subscription.
+
+        '
+    notificationContent:
+      type: object
+      properties:
+        payload:
+          description: Content of the notification, see get payment details, get trade details
+        eventType:
+          type: string
+          description: Event that triggered the notification.
+        webhookId:
+          $ref: '#/components/schemas/webhookId'
   securitySchemes:
     X-WSSE:
       type: apiKey
